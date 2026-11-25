@@ -192,15 +192,8 @@ fun GroupSettings(g: Group, members: List<String>, net: Map<String, Long>, model
             HissaField(name, { name = it.take(80); err = null }, "Group name", error = Check.groupName(name))
 
             SettingsTitle("Group members")
-            ActionRow(Icons.Rounded.PersonAdd, "Add from contacts", "Pick someone and send them the invite", accent = true) { addPeople = true }
-            ActionRow(Icons.Rounded.Share, "Share invite link", "By message, email or chat", accent = true) { shareInvite(ctx, g) }
+            ActionRow(Icons.Rounded.PersonAdd, "Invite people", "From contacts or with a link", accent = true) { addPeople = true }
             if (addPeople) AddPeopleSheet(listOf(g), g) { addPeople = false }
-            ActionRow(Icons.Rounded.Link, "Copy invite link", link) {
-                clipboard.setText(AnnotatedString(link)); run { snack.say("Link copied") }
-            }
-            ActionRow(Icons.Rounded.ContentCopy, "Copy invite code", g.inviteCode) {
-                clipboard.setText(AnnotatedString(g.inviteCode)); run { snack.say("Code copied") }
-            }
             members.forEach { m ->
                 val v = net[m] ?: 0L
                 Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -218,7 +211,7 @@ fun GroupSettings(g: Group, members: List<String>, net: Map<String, Long>, model
                 }
             }
 
-            SettingsTitle("Advanced settings")
+            SettingsTitle("Settings")
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f).padding(end = 12.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -244,24 +237,22 @@ fun GroupSettings(g: Group, members: List<String>, net: Map<String, Long>, model
             }
 
             SettingsTitle("Import")
-            ActionRow(Icons.Rounded.FileUpload, "Import expenses from a file", "A Splitwise export or any CSV with Date, Description and Amount") {
+            ActionRow(Icons.Rounded.FileUpload, "Import from a file", "Splitwise export or CSV") {
                 csvPick.launch(arrayOf("text/csv", "text/comma-separated-values", "text/plain", "application/vnd.ms-excel", "application/csv"))
             }
 
             ErrorText(err)
-            SettingsTitle("Leave or delete")
+            Row(verticalAlignment = Alignment.Bottom) { SettingsTitle("Leave or delete"); InfoTip("You can leave once you are settled up. Deleting removes the group and every expense for all members, and cannot be undone.") }
             SecondaryButton(if (sureLeave) "Tap again to leave" else "Leave group", muted = true, onClick = {
                 if (!sureLeave) sureLeave = true
                 else run { Api.leaveGroup(g.id); model.refresh(); snack.say("You left ${g.name}"); onGone() }
             })
-            Text("You can leave once you are settled up.", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp, start = 4.dp))
             if (g.createdBy == me) {
                 Spacer(Modifier.height(12.dp))
                 SecondaryButton(if (sureDelete) "Tap again to delete for everyone" else "Delete group", danger = true, onClick = {
                     if (!sureDelete) sureDelete = true
                     else run { Api.deleteGroup(g.id); model.refresh(); snack.say("Group deleted"); onGone() }
                 })
-                Text("Deletes the group and all its expenses for every member. This can't be undone.", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp, start = 4.dp))
             }
             Spacer(Modifier.height(32.dp))
         }

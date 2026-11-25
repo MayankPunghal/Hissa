@@ -385,7 +385,7 @@ fun GroupScreen(g: Group, model: HomeModel, onBack: () -> Unit) {
                         .appendQueryParameter("tn", "Hissa: ${g.name}").build()
                     try { ctx.startActivity(Intent(Intent.ACTION_VIEW, uri)) } catch (e: Exception) { err = "No UPI app found on this phone." }
                 })
-                Text("After you pay, come back and tap Record payment.", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, modifier = Modifier.padding(top = 8.dp))
+
             }
             Spacer(Modifier.height(24.dp))
             PrimaryButton("Record payment", loading = busy, onClick = {

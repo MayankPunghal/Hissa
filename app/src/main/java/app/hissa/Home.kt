@@ -255,7 +255,7 @@ private fun Summary(d: HomeData) {
             if (net != 0L) Text(money(net, cur), style = MaterialTheme.typography.titleLarge, color = if (net > 0) sem.owed else sem.owe)
         }
         if (d.groups.any { it.currency != cur }) {
-            Text("Groups in other currencies are not included.", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
+            InfoTip("Groups in other currencies are not included.")
         }
     }
 }
@@ -468,7 +468,8 @@ private fun JoinSheet(onDismiss: () -> Unit, model: HomeModel, initial: String =
     var err by remember { mutableStateOf<String?>(null) }
     val run = rememberRunner({ busy = it }, { err = it })
     AppSheet(onDismiss, "Join with a code") {
-        Text(if (initial.isNotEmpty()) "You were invited to a group. Join it?" else "Paste the invite code or open a friend's invite link.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (initial.isNotEmpty()) Text("You were invited to a group. Join it?", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        else Row(verticalAlignment = Alignment.CenterVertically) { Text("Invite code", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant); InfoTip("Paste the code or the whole invite message. You can also just open a friend's invite link.") }
         Spacer(Modifier.height(16.dp))
         val clip = androidx.compose.ui.platform.LocalClipboardManager.current
         // Pasting a whole invite message (link, "Code: ..." text) is fine: the code is picked out of it.
@@ -513,7 +514,7 @@ fun OfflineNote() {
     ) {
         Icon(Icons.Rounded.CloudOff, null, Modifier.size(20.dp), tint = cs.onSurfaceVariant)
         Spacer(Modifier.width(12.dp))
-        Text("You're offline. Showing what was saved on this phone. Changes need a connection.", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
+        Text("Offline. Showing saved data.", style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant, modifier = Modifier.weight(1f)); InfoTip("Changes need a connection. What you see was saved on this phone.")
     }
 }
 
@@ -524,7 +525,7 @@ private fun UpiSheet(onDismiss: () -> Unit, current: String, onSaved: (String) -
     var err by remember { mutableStateOf<String?>(null) }
     val run = rememberRunner({ busy = it }, { err = it })
     AppSheet(onDismiss, "UPI ID") {
-        Text("Friends who owe you can pay you straight from a UPI app when they settle up. Leave it empty to remove it.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(verticalAlignment = Alignment.CenterVertically) { Text("Your UPI ID", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant); InfoTip("Friends who owe you can pay from a UPI app when they settle up. Leave empty to remove it.") }
         Spacer(Modifier.height(16.dp))
         HissaField(v, { v = it.trim().take(60); err = null }, "UPI ID (for example name@bank)")
         ErrorText(err)

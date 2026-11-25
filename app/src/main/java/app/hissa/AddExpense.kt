@@ -87,6 +87,19 @@ class SplitState(chosen: Set<String>) {
     var vals by mutableStateOf<Map<String, String>>(emptyMap())
     fun picked(members: List<String>) = members.filter { it in chosen }
     fun result(total: Long, members: List<String>) = buildSplit(mode, total, picked(members), vals)
+
+    /** Stores what was typed for [id] and, for exact amounts and percentages, fills the last other person with whatever is left. */
+    fun edit(id: String, text: String, members: List<String>, total: Long?) {
+        vals = vals + (id to text)
+        val whole = when (mode) { Mode.EXACT -> total ?: return; Mode.PERCENT -> 10000L; else -> return }
+        val ps = picked(members)
+        if (ps.size < 2 || id !in ps) return
+        val target = (ps - id).last()
+        val fixed = ps - target
+        if (fixed.any { vals[it].isNullOrBlank() }) return
+        val rest = (whole - fixed.sumOf { parseCents(vals[it].orEmpty()) ?: 0L }).coerceAtLeast(0L)
+        vals = vals + (target to if (rest % 100 == 0L) (rest / 100).toString() else "%d.%02d".format(rest / 100, rest % 100))
+    }
 }
 
 private class ItemRow(val name: String = "", val price: String = "", val who: Set<String> = emptySet())
@@ -122,7 +135,10 @@ private fun PeopleRows(
 @Composable
 private fun ItemsEditor(members: List<String>, model: HomeModel, items: MutableList<ItemRow>, cur: String) {
     val cs = MaterialTheme.colorScheme
-    Text("Add each item and tick who shared it. Tax, tip and fees are shared in proportion.", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text("Items", style = MaterialTheme.typography.titleSmall, color = cs.onSurfaceVariant)
+        InfoTip("Add each item and tick who shared it. Tax, tip and fees are shared in proportion.")
+    }
     Spacer(Modifier.height(8.dp))
     items.forEachIndexed { i, it ->
         Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(RoundedCornerShape(16.dp)).background(cs.surfaceContainerLow).padding(12.dp)) {
@@ -297,8 +313,8 @@ fun AddExpenseScreen(
     LaunchedEffect(Unit) { if (!editing) runCatching { focus.requestFocus() } }
 
     val hint: String? = when {
-        cents == null || cents <= 0L -> "Enter an amount to continue"
-        desc.isBlank() -> "Add what it was for"
+        cents == null || cents <= 0L -> null
+        desc.isBlank() -> null
         multi && paid.picked(members).isEmpty() -> "Choose who paid"
         multi && payRes?.isFailure == true -> "Paid by: " + payRes.exceptionOrNull()?.message
         !itemsMode && owes.picked(members).isEmpty() -> "Choose at least one person to split with"
@@ -489,7 +505,7 @@ private fun PeopleRowsBody(members: List<String>, model: HomeModel, st: SplitSta
                 val mine = res?.get(id)
                 if (on && mine != null) Text(money(mine, cur), style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
             }
-            if (on && st.mode != Mode.EQUAL) AmountBox(st.vals[id].orEmpty(), { st.vals = st.vals + (id to it) }, if (st.mode == Mode.EXACT) "0.00" else unit)
+            if (on && st.mode != Mode.EQUAL) AmountBox(st.vals[id].orEmpty(), { st.edit(id, it, members, total) }, if (st.mode == Mode.EXACT) "0.00" else unit)
         }
     }
 }

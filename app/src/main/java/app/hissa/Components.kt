@@ -3,6 +3,9 @@
 package app.hissa
 
 import androidx.compose.animation.core.Spring
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.Icon
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
@@ -268,4 +271,20 @@ private val snackScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Su
 fun SnackbarHostState.say(message: String) {
     currentSnackbarData?.dismiss()
     snackScope.launch { showSnackbar(message) }
+}
+
+/** Small (i) button that shows a one-line explanation on tap. Keeps helper text out of the layout. */
+@Composable
+fun InfoTip(text: String, modifier: Modifier = Modifier) {
+    val state = androidx.compose.material3.rememberTooltipState(isPersistent = true)
+    val scope = rememberCoroutineScope()
+    androidx.compose.material3.TooltipBox(
+        positionProvider = androidx.compose.material3.TooltipDefaults.rememberPlainTooltipPositionProvider(),
+        tooltip = { PlainTooltip { Text(text) } },
+        state = state, modifier = modifier,
+    ) {
+        androidx.compose.material3.IconButton({ scope.launch { if (state.isVisible) state.dismiss() else state.show() } }, Modifier.size(32.dp)) {
+            Icon(androidx.compose.material.icons.Icons.Outlined.Info, contentDescription = "More info: $text", Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
 }

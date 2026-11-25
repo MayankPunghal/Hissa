@@ -116,12 +116,13 @@ fun ConfirmScreen(email: String, onBack: () -> Unit) {
         Text("Check your email", style = MaterialTheme.typography.headlineLarge)
         Spacer(Modifier.height(8.dp))
         Text(
-            "We sent a confirmation code to $email. It can take a minute, and may land in spam.",
+            "Enter the code we sent to $email.",
             style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(28.dp))
         HissaField(code, { code = it.filter(Char::isDigit).take(10) }, "Code", keyboard = KeyboardType.Number, centered = true)
         Spacer(Modifier.height(20.dp))
+        Row(Modifier.align(Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) { Text("Nothing yet?", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant); InfoTip("It can take a minute and may land in spam.") }
         PrimaryButton("Confirm", enabled = code.length >= 6, loading = busy, onClick = { run { Api.confirmSignup(email, code) } })
         Spacer(Modifier.height(8.dp))
         TextButton({ run { Api.resendSignupCode(email); snack.say("New code sent") } }, Modifier.align(Alignment.CenterHorizontally)) {
@@ -144,8 +145,8 @@ fun ResetScreen(onBack: () -> Unit) {
         Text("Reset password", style = MaterialTheme.typography.headlineLarge)
         Spacer(Modifier.height(8.dp))
         Text(
-            if (sent) "Enter the code we emailed you and choose a new password."
-            else "We'll email you a code to set a new password.",
+            if (sent) "Enter the code from your email and choose a new password."
+            else "We will email you a code.",
             style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(28.dp))

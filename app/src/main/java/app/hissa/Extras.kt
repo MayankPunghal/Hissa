@@ -141,7 +141,7 @@ fun FriendsTab(model: HomeModel) {
                 }
             }
             Spacer(Modifier.height(8.dp))
-            Text("To settle, open the group and tap Settle.", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
+
         }
     }
 }

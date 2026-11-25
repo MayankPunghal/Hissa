@@ -86,7 +86,7 @@ import kotlinx.coroutines.CancellationException
 
 
 @Composable
-fun GroupScreen(g: Group, model: HomeModel, onBack: () -> Unit) {
+fun GroupScreen(g: Group, model: HomeModel, focusExpense: String? = null, onBack: () -> Unit) {
     val cs = MaterialTheme.colorScheme
     val sem = MaterialTheme.semantic
     val me = Api.me ?: ""
@@ -105,6 +105,12 @@ fun GroupScreen(g: Group, model: HomeModel, onBack: () -> Unit) {
     var detail by remember { mutableStateOf<Expense?>(null) }
     var settle by remember { mutableStateOf<Transfer?>(null) }
     var refreshing by remember { mutableStateOf(false) }
+    var focused by remember { mutableStateOf(false) }
+    // Arriving from the Activity tab: open that expense once its group has loaded.
+    LaunchedEffect(gd, focusExpense) {
+        val list = gd?.expenses
+        if (focusExpense != null && !focused && list != null) { focused = true; detail = list.firstOrNull { it.id == focusExpense } }
+    }
 
     suspend fun reload() { gd = Api.loadGroup(g.id) }
     LaunchedEffect(g.id, model.tick) {

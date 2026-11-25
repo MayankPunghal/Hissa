@@ -107,6 +107,7 @@ class HomeModel {
 fun Home(openServer: () -> Unit) {
     val model = remember { HomeModel() }
     var openGroup by remember { mutableStateOf<Group?>(null) }
+    var openExpense by remember { mutableStateOf<String?>(null) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
@@ -121,7 +122,7 @@ fun Home(openServer: () -> Unit) {
         } finally { withContext(NonCancellable) { runCatching { Api.closeChannel(ch) } } }
     }
 
-    BackHandler(openGroup != null) { openGroup = null }
+    BackHandler(openGroup != null) { openGroup = null; openExpense = null }
     AnimatedContent(
         openGroup,
         transitionSpec = {
@@ -130,13 +131,13 @@ fun Home(openServer: () -> Unit) {
         },
         label = "screen",
     ) { g ->
-        if (g == null) Tabs(model, tab, { tab = it }, { openGroup = it }, openServer)
-        else GroupScreen(model.data?.groups?.firstOrNull { it.id == g.id } ?: g, model) { openGroup = null }
+        if (g == null) Tabs(model, tab, { tab = it }, { openExpense = null; openGroup = it }, { grp, id -> openExpense = id; openGroup = grp }, openServer)
+        else GroupScreen(model.data?.groups?.firstOrNull { it.id == g.id } ?: g, model, openExpense) { openGroup = null; openExpense = null }
     }
 }
 
 @Composable
-private fun Tabs(model: HomeModel, tab: Int, setTab: (Int) -> Unit, onOpen: (Group) -> Unit, openServer: () -> Unit) {
+private fun Tabs(model: HomeModel, tab: Int, setTab: (Int) -> Unit, onOpen: (Group) -> Unit, onOpenExpense: (Group, String) -> Unit, openServer: () -> Unit) {
     val cs = MaterialTheme.colorScheme
     var sheet by remember { mutableStateOf("") } // "", "new", "join"
     // A tapped invite link opens the join sheet with its code filled in.
@@ -182,7 +183,7 @@ private fun Tabs(model: HomeModel, tab: Int, setTab: (Int) -> Unit, onOpen: (Gro
                 when (t) {
                     0 -> GroupsTab(model, onOpen) { sheet = "join" }
                     1 -> FriendsTab(model)
-                    2 -> ActivityTab(model)
+                    2 -> ActivityTab(model, onOpenExpense)
                     else -> AccountTab(model, openServer)
                 }
             }
@@ -290,7 +291,7 @@ private fun GroupCard(g: Group, d: HomeData, modifier: Modifier, onClick: () -> 
 // ───────────────────────────── Activity ─────────────────────────────
 
 @Composable
-private fun ActivityTab(model: HomeModel) {
+private fun ActivityTab(model: HomeModel, onOpenExpense: (Group, String) -> Unit) {
     val cs = MaterialTheme.colorScheme
     val sem = MaterialTheme.semantic
     val run = rememberRunner()
@@ -326,7 +327,7 @@ private fun ActivityTab(model: HomeModel) {
                         val group = d.groups.firstOrNull { it.id == e.groupId }
                         val cur = group?.currency ?: "INR"
                         val net = e.netFor(me)
-                        Row(Modifier.animateItem().fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.animateItem().fillMaxWidth().pressable(role = null) { group?.let { onOpenExpense(it, e.id) } }.padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                             if (e.isSettlement) Box(Modifier.size(44.dp).clip(CircleShape).background(cs.primaryContainer), Alignment.Center) {
                                 Icon(Icons.Rounded.Check, null, tint = cs.onPrimaryContainer)
                             } else Box(Modifier.size(44.dp).clip(CircleShape).background(cs.surfaceContainer), Alignment.Center) { Icon(Cat.of(e.category).icon, null, Modifier.size(22.dp)) }
@@ -365,19 +366,19 @@ private fun ActivityTab(model: HomeModel) {
 // ───────────────────────────── Account ─────────────────────────────
 
 @Composable
-private fun SettingsRow(icon: ImageVector, title: String, subtitle: String? = null, danger: Boolean = false, onClick: (() -> Unit)? = null) {
+private fun SettingsRow(icon: ImageVector, title: String, subtitle: String? = null, danger: Boolean = false, accent: Boolean = false, onClick: (() -> Unit)? = null) {
     val cs = MaterialTheme.colorScheme
-    val tint = if (danger) cs.error else cs.onSurface
+    val tint = if (danger) cs.error else if (accent) cs.onPrimaryContainer else cs.onSurface
     Row(
         Modifier.fillMaxWidth().let { if (onClick != null) it.pressable(role = null, onClick = onClick) else it }.padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(40.dp).clip(CircleShape).background(if (danger) cs.errorContainer else cs.surfaceContainer), Alignment.Center) {
+        Box(Modifier.size(40.dp).clip(CircleShape).background(if (danger) cs.errorContainer else if (accent) cs.primaryContainer else cs.surfaceContainer), Alignment.Center) {
             Icon(icon, null, tint = tint, modifier = Modifier.size(20.dp))
         }
         Spacer(Modifier.width(16.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleMedium, color = tint)
+            Text(title, style = MaterialTheme.typography.titleMedium, color = if (danger) cs.error else cs.onSurface)
             if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
@@ -406,13 +407,13 @@ private fun AccountTab(model: HomeModel, openServer: () -> Unit) {
             Divider()
             Text("Preferences", style = MaterialTheme.typography.titleSmall, color = cs.onSurfaceVariant, modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp))
             SettingsRow(Icons.Rounded.Palette, "Appearance", listOf("Match phone", "Light", "Dark")[Api.themeMode]) { appearance = true }
-            SettingsRow(Icons.Rounded.Payments, "UPI ID", upi.ifEmpty { "Add yours so friends can pay you" }) { upiSheet = true }
+            SettingsRow(Icons.Rounded.Payments, "UPI ID", upi.ifEmpty { "Add yours so friends can pay you" }, accent = true) { upiSheet = true }
             SettingsRow(Icons.Rounded.Lock, "Change password") { password = true }
             Text("About", style = MaterialTheme.typography.titleSmall, color = cs.onSurfaceVariant, modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp))
             if (BuildConfig.SUPABASE_URL.isBlank()) SettingsRow(Icons.Rounded.Cloud, "Server", Api.serverUrl.removePrefix("https://"), onClick = openServer)
             SettingsRow(Icons.Rounded.Info, "Hissa ${BuildConfig.VERSION_NAME}", "Free and open source")
             Divider()
-            SettingsRow(Icons.AutoMirrored.Rounded.Logout, "Sign out", danger = true) { run { Api.signOut() } }
+            SettingsRow(Icons.AutoMirrored.Rounded.Logout, "Sign out") { run { Api.signOut() } }
         }
     }
     if (password) PasswordSheet { password = false }

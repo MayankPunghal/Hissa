@@ -3,6 +3,8 @@ package app.hissa
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.background
+import androidx.compose.material.icons.rounded.PersonAdd
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -100,7 +102,9 @@ fun FriendsTab(model: HomeModel) {
     val d = model.data
     val me = Api.me ?: ""
     var open by remember { mutableStateOf<String?>(null) }
-    var showSettled by remember { mutableStateOf(false) }
+    var filter by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(1) } // 0 all, 1 outstanding, 2 you owe, 3 owe you
+    var menu by remember { mutableStateOf(false) }
+    var addPeople by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     var err by remember { mutableStateOf<String?>(null) }
     var confirm by remember { mutableStateOf(false) }
@@ -108,7 +112,23 @@ fun FriendsTab(model: HomeModel) {
     val runSettle = rememberRunner({ busy = it }, { err = it })
     PullToRefreshBox(isRefreshing = model.loading && d != null, onRefresh = { run { model.refresh() } }, modifier = Modifier.fillMaxSize()) {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
-            item { Text("Friends", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 4.dp)) }
+            item {
+                Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("Friends", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.weight(1f))
+                    androidx.compose.material3.IconButton({ addPeople = true }) { androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Rounded.PersonAdd, contentDescription = "Add people") }
+                    Box {
+                        androidx.compose.material3.IconButton({ menu = true }) { androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Rounded.Tune, contentDescription = "Filter friends") }
+                        androidx.compose.material3.DropdownMenu(menu, { menu = false }) {
+                            listOf("All friends", "Outstanding balances", "Friends you owe", "Friends who owe you").forEachIndexed { i, label ->
+                                androidx.compose.material3.DropdownMenuItem(
+                                    text = { Text(label) }, onClick = { filter = i; menu = false },
+                                    leadingIcon = { androidx.compose.material3.RadioButton(filter == i, { filter = i; menu = false }) },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
             if (d == null) { item { Box(Modifier.fillMaxWidth().height(240.dp), Alignment.Center) { FullScreenLoading() } }; return@LazyColumn }
             val pairs = pairwise(me, d)
             val all = d.members.values.flatten().filter { it != me }.distinct()
@@ -128,8 +148,14 @@ fun FriendsTab(model: HomeModel) {
                 }
             }
             val open0 = all.filter { pairs[it].orEmpty().isNotEmpty() }
-            val settled = all - open0.toSet()
-            val friends = if (showSettled) all else open0
+            fun owing(f: String) = pairs[f].orEmpty().sumOf { it.cents }
+            val friends = when (filter) { 0 -> all; 1 -> open0; 2 -> all.filter { owing(it) < 0 }; else -> all.filter { owing(it) > 0 } }
+            if (friends.isEmpty()) item {
+                EmptyState(
+                    if (filter == 1) "All settled up" else "No one here",
+                    when (filter) { 1 -> "Nobody owes you and you owe nobody."; 2 -> "You don't owe anyone right now."; 3 -> "Nobody owes you right now."; else -> "No friends yet." },
+                )
+            }
             items(friends, key = { it }) { f ->
                 val lines = pairs[f].orEmpty()
                 val cur = lines.map { it.group.currency }.distinct()
@@ -156,16 +182,9 @@ fun FriendsTab(model: HomeModel) {
                     }
                 }
             }
-            if (settled.isNotEmpty()) item {
-                Box(Modifier.fillMaxWidth().padding(20.dp), Alignment.Center) {
-                    SecondaryButton(
-                        if (showSettled) "Hide settled-up friends" else "Show ${settled.size} settled-up ${if (settled.size == 1) "friend" else "friends"}",
-                        { showSettled = !showSettled }, Modifier.width(260.dp),
-                    )
-                }
-            }
         }
     }
+    if (addPeople) AddPeopleSheet(d?.groups.orEmpty(), null) { addPeople = false }
     open?.let { f ->
         val lines = if (d != null) pairwise(me, d)[f].orEmpty() else emptyList()
         val plan = settleAllPlan(me, f, lines)

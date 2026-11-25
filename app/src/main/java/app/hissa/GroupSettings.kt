@@ -105,7 +105,7 @@ fun GroupTile(g: Group, size: Dp, image: String? = g.image, modifier: Modifier =
 fun shareInvite(ctx: Context, g: Group) {
     val send = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
-        putExtra(Intent.EXTRA_TEXT, "Join \"${g.name}\" on Hissa and split bills with me.\n\nTap to join:\n${Api.inviteLink(g.inviteCode)}\n\nInvite code:\n${g.inviteCode}")
+        putExtra(Intent.EXTRA_TEXT, inviteMessage(g))
     }
     ctx.startActivity(Intent.createChooser(send, "Invite friends"))
 }
@@ -113,10 +113,10 @@ fun shareInvite(ctx: Context, g: Group) {
 // ───────────────────────────── settings screen ─────────────────────────────
 
 @Composable
-private fun ActionRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
+private fun ActionRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, accent: Boolean = false, onClick: () -> Unit) {
     val cs = MaterialTheme.colorScheme
     Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).pressable(role = null, onClick = onClick).padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(44.dp).clip(CircleShape).background(cs.surfaceContainer), Alignment.Center) { Icon(icon, null, Modifier.size(22.dp)) }
+        Box(Modifier.size(44.dp).clip(CircleShape).background(if (accent) cs.primaryContainer else cs.surfaceContainer), Alignment.Center) { Icon(icon, null, Modifier.size(22.dp), tint = if (accent) cs.onPrimaryContainer else cs.onSurface) }
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
@@ -138,6 +138,7 @@ fun GroupSettings(g: Group, members: List<String>, net: Map<String, Long>, model
     var busy by remember { mutableStateOf(false) }
     var err by remember { mutableStateOf<String?>(null) }
     var sureLeave by remember { mutableStateOf(false) }
+    var addPeople by remember { mutableStateOf(false) }
     var sureDelete by remember { mutableStateOf(false) }
     val run = rememberRunner({ busy = it }, { err = it })
     val pick = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -191,7 +192,9 @@ fun GroupSettings(g: Group, members: List<String>, net: Map<String, Long>, model
             HissaField(name, { name = it.take(80); err = null }, "Group name", error = Check.groupName(name))
 
             SettingsTitle("Group members")
-            ActionRow(Icons.Rounded.PersonAdd, "Add people to group", "Share the invite link by message, email or chat") { shareInvite(ctx, g) }
+            ActionRow(Icons.Rounded.PersonAdd, "Add from contacts", "Pick someone and send them the invite", accent = true) { addPeople = true }
+            ActionRow(Icons.Rounded.Share, "Share invite link", "By message, email or chat", accent = true) { shareInvite(ctx, g) }
+            if (addPeople) AddPeopleSheet(listOf(g), g) { addPeople = false }
             ActionRow(Icons.Rounded.Link, "Copy invite link", link) {
                 clipboard.setText(AnnotatedString(link)); run { snack.say("Link copied") }
             }
@@ -218,11 +221,11 @@ fun GroupSettings(g: Group, members: List<String>, net: Map<String, Long>, model
             SettingsTitle("Advanced settings")
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f).padding(end = 12.dp)) {
-                    Text("Simplify group debts", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        "Combines debts so fewer payments clear everyone. For example, if you owe Asha and Asha owes Ravi, you pay Ravi directly. This is kept on this phone.",
-                        style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Simplify group debts", style = MaterialTheme.typography.titleMedium)
+                        InfoTip("Combines debts so fewer payments clear everyone. If you owe Asha and Asha owes Ravi, you pay Ravi directly. Kept on this phone.")
+                    }
+                    Text("Fewer payments to settle up", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
                 }
                 Switch(Api.simplifyDebts(g.id), { Api.setSimplifyDebts(g.id, it) })
             }
@@ -247,7 +250,7 @@ fun GroupSettings(g: Group, members: List<String>, net: Map<String, Long>, model
 
             ErrorText(err)
             SettingsTitle("Leave or delete")
-            SecondaryButton(if (sureLeave) "Tap again to leave" else "Leave group", danger = true, onClick = {
+            SecondaryButton(if (sureLeave) "Tap again to leave" else "Leave group", muted = true, onClick = {
                 if (!sureLeave) sureLeave = true
                 else run { Api.leaveGroup(g.id); model.refresh(); snack.say("You left ${g.name}"); onGone() }
             })

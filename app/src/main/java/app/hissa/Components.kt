@@ -155,12 +155,12 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
 }
 
 @Composable
-fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, danger: Boolean = false) {
+fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, danger: Boolean = false, muted: Boolean = false) {
     val cs = MaterialTheme.colorScheme
     Box(
-        modifier.fillMaxWidth().height(56.dp).clip(CircleShape).border(1.dp, cs.outlineVariant, CircleShape).pressable(onClick = onClick),
+        modifier.fillMaxWidth().height(56.dp).clip(CircleShape).border(1.dp, if (danger) cs.error.copy(alpha = 0.5f) else cs.outlineVariant, CircleShape).pressable(onClick = onClick),
         Alignment.Center,
-    ) { Text(text, style = MaterialTheme.typography.titleMedium, color = if (danger) cs.error else cs.onSurface) }
+    ) { Text(text, style = MaterialTheme.typography.titleMedium, color = if (danger) cs.error else if (muted) cs.onSurfaceVariant else cs.onSurface) }
 }
 
 @Composable

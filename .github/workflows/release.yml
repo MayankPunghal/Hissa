@@ -12,7 +12,7 @@ on:
 permissions:
   contents: write
 
-concurrency: release # one release at a time
+concurrency: release
 
 jobs:
   release:

@@ -24,6 +24,13 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 17 }
 
+      # Ship the database first, so the new app never meets an old schema. The script is safe to re-run.
+      - name: Update database
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -n "$DB_URL" ]; then psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/setup.sql; else echo "SUPABASE_DB_URL not set, skipping database update"; fi
+
       - name: Next version
         id: v
         run: |

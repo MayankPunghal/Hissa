@@ -337,7 +337,7 @@ fun AddExpenseScreen(
                         { Text("Take a photo") }, leadingIcon = { Icon(Icons.Rounded.AddAPhoto, null) },
                         onClick = {
                             scanMenu = false
-                            val f = java.io.File(ctx.cacheDir, "receipts").apply { mkdirs() }.let { java.io.File.createTempFile("r", ".jpg", it) }
+                            val f = java.io.File(ctx.cacheDir, "receipts").apply { mkdirs() }.let { java.io.File.createTempFile("receipt", ".jpg", it) }
                             val u = androidx.core.content.FileProvider.getUriForFile(ctx, ctx.packageName + ".files", f)
                             camUri = u; cam.launch(u)
                         },

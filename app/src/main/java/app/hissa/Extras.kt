@@ -57,6 +57,40 @@ fun pairwise(me: String, d: HomeData): Map<String, List<PairLine>> {
     return out.mapValues { (_, m) -> m.mapNotNull { (gid, c) -> byGroup[gid]?.let { PairLine(it, c) } }.filter { it.cents != 0L } }
 }
 
+
+/** One payment to record so a pair is square in one group. */
+data class Payment(val group: Group, val from: String, val to: String, val cents: Long)
+
+/** The payments that zero out every shared group with [friend]: you pay where you owe, they pay where they owe. */
+fun settleAllPlan(me: String, friend: String, lines: List<PairLine>): List<Payment> =
+    lines.filter { it.cents != 0L }.map { if (it.cents > 0) Payment(it.group, friend, me, it.cents) else Payment(it.group, me, friend, -it.cents) }
+
+/** What actually changes hands once the groups are netted against each other, per currency. + you receive, - you pay. */
+fun settleNet(me: String, plan: List<Payment>): Map<String, Long> =
+    plan.groupBy { it.group.currency }.mapValues { (_, ps) -> ps.sumOf { if (it.to == me) it.cents else -it.cents } }
+
+/** Result of [settleAll]: how many payments went through and the first error message, if any. */
+data class SettleOutcome(val done: Int, val total: Int, val error: String?)
+
+/**
+ * Re-reads the balances, refuses if they no longer match what the user confirmed, then records one payment per group.
+ * Safe to run again after a partial failure: it only ever records what is still open.
+ */
+suspend fun settleAll(me: String, friend: String, confirmed: List<Payment>): SettleOutcome {
+    val home = Api.loadHome()
+    if (home.offline) return SettleOutcome(0, 0, "You are offline. Connect and try again.")
+    val fresh = settleAllPlan(me, friend, pairwise(me, home)[friend].orEmpty())
+    if (fresh.map { Triple(it.group.id, it.from, it.cents) } != confirmed.map { Triple(it.group.id, it.from, it.cents) })
+        return SettleOutcome(0, fresh.size, "Balances changed. Please review and try again.")
+    var done = 0
+    var err: String? = null
+    for (p in fresh) {
+        try { Api.settle(p.group.id, p.from, p.to, p.cents); done++ } catch (e: kotlinx.coroutines.CancellationException) { throw e } catch (e: Exception) {
+            if (err == null) err = friendly(e)
+        }
+    }
+    return SettleOutcome(done, fresh.size, err)
+}
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun FriendsTab(model: HomeModel) {
@@ -67,6 +101,11 @@ fun FriendsTab(model: HomeModel) {
     val me = Api.me ?: ""
     var open by remember { mutableStateOf<String?>(null) }
     var showSettled by remember { mutableStateOf(false) }
+    var busy by remember { mutableStateOf(false) }
+    var err by remember { mutableStateOf<String?>(null) }
+    var confirm by remember { mutableStateOf(false) }
+    val snack = LocalSnack.current
+    val runSettle = rememberRunner({ busy = it }, { err = it })
     PullToRefreshBox(isRefreshing = model.loading && d != null, onRefresh = { run { model.refresh() } }, modifier = Modifier.fillMaxSize()) {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
             item { Text("Friends", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 4.dp)) }
@@ -129,7 +168,11 @@ fun FriendsTab(model: HomeModel) {
     }
     open?.let { f ->
         val lines = if (d != null) pairwise(me, d)[f].orEmpty() else emptyList()
-        AppSheet({ open = null }, model.fullName(f)) {
+        val plan = settleAllPlan(me, f, lines)
+        val net = settleNet(me, plan)
+        val who = firstName(model.fullName(f))
+        fun netText(): String = net.entries.joinToString(" and ") { (cur, c) -> if (c >= 0) "$who pays you ${money(c, cur)}" else "you pay $who ${money(c, cur)}" }
+        AppSheet({ if (!busy) { open = null; err = null } }, model.fullName(f)) {
             if (lines.isEmpty()) Text("You two are all settled up.", style = MaterialTheme.typography.bodyLarge, color = cs.onSurfaceVariant)
             lines.forEach { l ->
                 Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -140,9 +183,30 @@ fun FriendsTab(model: HomeModel) {
                     )
                 }
             }
-            Spacer(Modifier.height(8.dp))
-
+            if (plan.isNotEmpty()) {
+                if (plan.size > 1) Text("Across groups: ${netText()}", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant)
+                ErrorText(err)
+                Spacer(Modifier.height(20.dp))
+                PrimaryButton("Settle all with $who", { confirm = true }, loading = busy)
+            }
         }
+        if (confirm && plan.isNotEmpty()) androidx.compose.material3.AlertDialog(
+            onDismissRequest = { confirm = false },
+            title = { Text("Settle up with $who?") },
+            text = { Text("This records ${plan.size} ${if (plan.size == 1) "payment" else "payments"}, one in each group, so you and $who are square everywhere. ${netText().replaceFirstChar { it.uppercase() }}.") },
+            confirmButton = {
+                androidx.compose.material3.TextButton({
+                    confirm = false
+                    runSettle {
+                        val r = settleAll(me, f, plan)
+                        model.refresh()
+                        if (r.error == null) { open = null; snack.say("All settled up with $who") }
+                        else err = if (r.done == 0) r.error else "Settled ${r.done} of ${r.total} groups. ${r.error} Tap Settle all to retry the rest."
+                    }
+                }) { Text("Settle") }
+            },
+            dismissButton = { androidx.compose.material3.TextButton({ confirm = false }) { Text("Cancel") } },
+        )
     }
 }
 

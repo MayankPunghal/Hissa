@@ -21,6 +21,8 @@
   .ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
   .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
   small{display:block;margin-top:20px;color:var(--mute);font-size:13px}
+  small a{color:inherit;text-decoration:underline}
+  [hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -33,8 +35,7 @@
   <div class="code" id="code"></div>
   <a class="btn primary" id="open" href="#">Open in Hissa</a>
   <button class="btn ghost" id="copy" type="button">Copy invite code</button>
-  <a class="btn ghost" id="get" href="#" hidden>Get the app (Android)</a>
-  <small>Don't have Hissa yet? Install it first, then tap Open in Hissa again, or paste the code into Join with a code.</small>
+  <small>Already have Hissa? Tap Open in Hissa and you will join the group. New here? <a id="get" href="#" hidden>Get the app</a>, then come back to this link.</small>
 </main>
 <script>
   // Works for  .../join/?code=CODE  and  .../join/CODE  (the second needs a 404 page that forwards here).
@@ -44,15 +45,18 @@
   var el = function (id) { return document.getElementById(id); };
   el("code").textContent = code || "No code in this link";
   var link = "hissa://join/" + encodeURIComponent(code);
-  el("open").href = link;
+  // On Android Chrome an intent link opens the installed app directly and does nothing else if it is missing.
+  var isAndroid = /Android/i.test(navigator.userAgent);
+  var openHref = isAndroid ? "intent://join/" + encodeURIComponent(code) + "#Intent;scheme=hissa;package=app.hissa;end" : link;
+  el("open").href = openHref;
   el("copy").onclick = function () {
     var done = function () { el("copy").textContent = "Copied"; };
     if (navigator.clipboard) navigator.clipboard.writeText(code).then(done); else { var r = document.createRange(); r.selectNodeContents(el("code")); getSelection().addRange(r); document.execCommand("copy"); done(); }
   };
   // On GitHub Pages the APK lives in the repo's latest release.
   var m = location.hostname.match(/^([^.]+)\.github\.io$/), repo = location.pathname.split("/")[1];
-  if (m && repo) { el("get").href = "https://github.com/" + m[1] + "/" + repo + "/releases/latest/download/Hissa.apk"; el("get").hidden = false; }
-  if (code && /Android/i.test(navigator.userAgent)) setTimeout(function () { location.href = link; }, 400);
+  if (m && repo) { el("get").href = "https://github.com/" + m[1] + "/" + repo + "/releases/latest"; el("get").hidden = false; }
+  if (code && isAndroid) setTimeout(function () { location.href = openHref; }, 400);
 </script>
 </body>
 </html>

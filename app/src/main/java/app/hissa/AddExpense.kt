@@ -266,7 +266,7 @@ fun AddExpenseScreen(
         }
     }
 
-    val cents = parseCents(amount)
+    val cents = parseCents(amount)?.takeIf { it <= 10_00_00_000_00L } // up to 10 crore rupees
     val ownRes: Result<Map<String, Long>>? = cents?.let { if (itemsMode) itemsSplit(it, items) else owes.result(it, members) }
     val payRes: Result<Map<String, Long>>? = cents?.let { if (multi) paid.result(it, members) else Result.success(mapOf(payer to it)) }
 

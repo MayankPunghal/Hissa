@@ -164,11 +164,12 @@ fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modi
 fun HissaField(
     value: String, onChange: (String) -> Unit, label: String, modifier: Modifier = Modifier,
     keyboard: KeyboardType = KeyboardType.Text, password: Boolean = false, singleLine: Boolean = true,
-    trailing: @Composable (() -> Unit)? = null, leading: @Composable (() -> Unit)? = null, centered: Boolean = false,
+    trailing: @Composable (() -> Unit)? = null, leading: @Composable (() -> Unit)? = null, centered: Boolean = false, error: String? = null,
 ) {
     val cs = MaterialTheme.colorScheme
     OutlinedTextField(
-        value = value, onValueChange = onChange, modifier = modifier.fillMaxWidth(),
+        value = value, onValueChange = onChange, modifier = modifier.fillMaxWidth(), isError = error != null,
+        supportingText = error?.let { { Text(it) } },
         label = { Text(label) }, singleLine = singleLine, shape = RoundedCornerShape(16.dp),
         keyboardOptions = KeyboardOptions(keyboardType = if (password) KeyboardType.Password else keyboard),
         visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,

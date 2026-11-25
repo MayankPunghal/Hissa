@@ -59,7 +59,8 @@ fun AuthScreen(openSettings: () -> Unit, onForgot: () -> Unit) {
     if (confirming) { ConfirmScreen(email) { confirming = false }; return }
 
     val signup = mode == 1
-    val valid = email.contains("@") && pass.length >= 6 && (!signup || name.isNotBlank())
+    val emailErr = Check.email(email); val passErr = if (signup) Check.password(pass) else null; val nameErr = Check.personName(name)
+    val valid = email.isNotBlank() && emailErr == null && pass.isNotEmpty() && passErr == null && (!signup || (name.isNotBlank() && nameErr == null))
     AuthColumn {
         Spacer(Modifier.height(48.dp))
         LogoMark(60.dp)
@@ -71,10 +72,10 @@ fun AuthScreen(openSettings: () -> Unit, onForgot: () -> Unit) {
         Segmented(listOf("Sign in", "Sign up"), mode, { mode = it })
         Spacer(Modifier.height(20.dp))
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (signup) HissaField(name, { name = it }, "Full name")
-            HissaField(email, { email = it }, "Email", keyboard = KeyboardType.Email)
+            if (signup) HissaField(name, { name = it.take(60) }, "Full name", error = nameErr)
+            HissaField(email, { email = it.replace(" ", "").take(254) }, "Email", keyboard = KeyboardType.Email, error = emailErr)
             HissaField(
-                pass, { pass = it }, "Password", password = !show,
+                pass, { pass = it.take(72) }, "Password", password = !show, error = passErr,
                 trailing = {
                     IconButton({ show = !show }) {
                         Icon(if (show) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility, contentDescription = if (show) "Hide password" else "Show password")
@@ -149,14 +150,14 @@ fun ResetScreen(onBack: () -> Unit) {
         )
         Spacer(Modifier.height(28.dp))
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            HissaField(email, { email = it }, "Email", keyboard = KeyboardType.Email)
+            HissaField(email, { email = it.replace(" ", "").take(254) }, "Email", keyboard = KeyboardType.Email, error = Check.email(email))
             if (sent) {
                 HissaField(code, { code = it.filter(Char::isDigit).take(10) }, "Code", keyboard = KeyboardType.Number, centered = true)
-                HissaField(pass, { pass = it }, "New password (6+)", password = true)
+                HissaField(pass, { pass = it.take(72) }, "New password (8+)", password = true, error = Check.password(pass))
             }
         }
         Spacer(Modifier.height(20.dp))
-        val ready = if (sent) code.length >= 6 && pass.length >= 6 else email.contains("@")
+        val ready = if (sent) code.length >= 6 && Check.password(pass) == null && pass.isNotEmpty() else email.isNotBlank() && Check.email(email) == null
         PrimaryButton(if (sent) "Set new password" else "Email me a code", enabled = ready, loading = busy, onClick = {
             run { if (!sent) { Api.sendResetCode(email); sent = true } else Api.resetPassword(email, code, pass) }
         })

@@ -170,7 +170,7 @@ fun GroupSettings(g: Group, members: List<String>, net: Map<String, Long>, model
             Text("Group settings", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
             TextButton(
                 onClick = { run { Api.updateGroup(g.id, name, image); model.refresh(); onClose() } },
-                enabled = dirty && name.isNotBlank() && !busy,
+                enabled = dirty && name.trim().length >= 2 && !busy,
             ) { Text("Save", style = MaterialTheme.typography.titleSmall) }
         }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
@@ -188,7 +188,7 @@ fun GroupSettings(g: Group, members: List<String>, net: Map<String, Long>, model
                 if (image != null) TextButton({ image = null }) { Text("Remove picture", color = cs.onSurfaceVariant) }
             }
             Spacer(Modifier.height(12.dp))
-            HissaField(name, { name = it.take(80); err = null }, "Group name")
+            HissaField(name, { name = it.take(80); err = null }, "Group name", error = Check.groupName(name))
 
             SettingsTitle("Group members")
             ActionRow(Icons.Rounded.PersonAdd, "Add people to group", "Share the invite link by message, email or chat") { shareInvite(ctx, g) }

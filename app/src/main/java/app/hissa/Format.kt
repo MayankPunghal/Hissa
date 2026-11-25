@@ -67,9 +67,12 @@ fun friendly(e: Throwable): String {
             "This isn't available right now. Please try again later."
         m.contains("Invalid login", true) -> "Wrong email or password."
         m.contains("not confirmed", true) -> "Please confirm your email first."
-        m.contains("already registered", true) -> "That email already has an account. Try signing in."
+        m.contains("already registered", true) || m.contains("already been registered", true) || m.contains("user_already_exists", true) -> "An account with this email already exists. Try signing in instead."
         m.contains("Unable to resolve host", true) || m.contains("timeout", true) || m.contains("Failed to connect", true) ->
             "No internet connection."
+        m.contains("rate limit", true) || m.contains("too many", true) -> "Too many attempts. Please wait a few minutes and try again."
+        m.contains("weak", true) && m.contains("password", true) -> "That password is too weak. Use 8+ characters with letters and numbers."
+        m.contains("invalid", true) && m.contains("email", true) -> "Enter a valid email address."
         m.contains("invalid invite code", true) -> "That invite code doesn't match any group."
         m.contains("expired", true) || m.contains("invalid", true) && m.contains("token", true) -> "That code is wrong or has expired."
         m.isBlank() || m.length > 90 -> "Something went wrong. Please try again."

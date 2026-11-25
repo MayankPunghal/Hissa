@@ -448,15 +448,15 @@ private fun NewGroupSheet(onDismiss: () -> Unit, model: HomeModel) {
     var err by remember { mutableStateOf<String?>(null) }
     val run = rememberRunner({ busy = it }, { err = it })
     AppSheet(onDismiss, "New group") {
-        HissaField(name, { name = it.take(80); err = null }, "Group name, like Goa trip")
+        HissaField(name, { name = it.take(80); err = null }, "Group name, like Goa trip", error = Check.groupName(name))
         Spacer(Modifier.height(16.dp))
         Text("Currency", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(8.dp))
         Segmented(codes.map { "${symbol(it).trim()} $it" }, cur, { cur = it })
         ErrorText(err)
         Spacer(Modifier.height(24.dp))
-        PrimaryButton("Create group", enabled = name.isNotBlank(), loading = busy, onClick = {
-            run { Api.createGroup(name, codes[cur]); model.refresh(); onDismiss() }
+        PrimaryButton("Create group", enabled = name.trim().length >= 2, loading = busy, onClick = {
+            run { Api.createGroup(name.trim(), codes[cur]); model.refresh(); onDismiss() }
         })
     }
 }
@@ -492,13 +492,13 @@ private fun PasswordSheet(onDismiss: () -> Unit) {
     var err by remember { mutableStateOf<String?>(null) }
     val run = rememberRunner({ busy = it }, { err = it })
     AppSheet(onDismiss, "Change password") {
-        HissaField(p1, { p1 = it }, "New password (6+)", password = true)
+        HissaField(p1, { p1 = it.take(72) }, "New password (8+)", password = true, error = Check.password(p1))
         Spacer(Modifier.height(12.dp))
         HissaField(p2, { p2 = it }, "Repeat new password", password = true)
         if (p2.isNotEmpty() && p1 != p2) Text("Passwords don't match.", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp), textAlign = TextAlign.Start)
         ErrorText(err)
         Spacer(Modifier.height(24.dp))
-        PrimaryButton("Update password", enabled = p1.length >= 6 && p1 == p2, loading = busy, onClick = {
+        PrimaryButton("Update password", enabled = p1.isNotEmpty() && Check.password(p1) == null && p1 == p2, loading = busy, onClick = {
             run { Api.changePassword(p1); onDismiss(); snack.say("Password updated") }
         })
     }

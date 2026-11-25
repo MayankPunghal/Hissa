@@ -152,10 +152,11 @@ object Api {
 
     /** Returns true if signed in straight away, false if the project wants email confirmation first. */
     suspend fun signUp(n: String, e: String, p: String): Boolean {
-        sb.auth.signUpWith(Email) {
+        val created = sb.auth.signUpWith(Email) {
             email = e.trim(); password = p
             data = buildJsonObject { put("name", n.trim()) }
         }
+        if (created?.identities?.isEmpty() == true) throw Exception("already registered")
         return sb.auth.currentSessionOrNull() != null
     }
 

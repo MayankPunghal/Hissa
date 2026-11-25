@@ -20,6 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
+      - run: chmod +x gradlew
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 17 }
 
@@ -65,7 +66,9 @@ jobs:
             } >> local.properties
           fi
 
-      - run: chmod +x gradlew && ./gradlew testDebugUnitTest assembleRelease -PversionName=${{ steps.v.outputs.version }} -PversionCode=${{ github.run_number }} --console=plain
+      - name: Build
+        run: |
+          ./gradlew testDebugUnitTest assembleRelease -PversionName=${{ steps.v.outputs.version }} -PversionCode=${{ github.run_number }} --console=plain > build.log 2>&1 || { echo "::error::$(tail -c 1800 build.log | tr -s "[:space:]" " ")"; exit 1; }
       - run: cp app/build/outputs/apk/release/app-release.apk Hissa-${{ steps.v.outputs.version }}.apk
 
       - name: Publish release

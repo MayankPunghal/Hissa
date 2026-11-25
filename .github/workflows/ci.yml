@@ -10,7 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: chmod +x gradlew
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 17 }
       - run: echo "sdk.dir=$ANDROID_HOME" > local.properties
-      - run: chmod +x gradlew && ./gradlew testDebugUnitTest assembleDebug --console=plain
+      - name: Build
+        run: |
+          ./gradlew testDebugUnitTest assembleDebug --console=plain > build.log 2>&1 || { echo "::error::$(tail -c 1800 build.log | tr -s "[:space:]" " ")"; exit 1; }

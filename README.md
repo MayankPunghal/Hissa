@@ -1,12 +1,21 @@
 <div align="center">
 
-# Hissa
+<img src="docs/banner.svg" alt="Hissa: split bills with friends" width="100%">
 
-**Split bills with friends. Free, open source, and yours to host.**
+<br>
 
-An Android app for sharing expenses in groups, tracking who owes whom, and settling up. It has no ads, no paywall and no limits on expenses. It runs on your own free [Supabase](https://supabase.com) account, so your data stays with you.
+[![Latest release](https://img.shields.io/github/v/release/MayankPunghal/Hissa?style=for-the-badge&color=ffb020&labelColor=111111)](../../releases/latest)
+[![CI](https://img.shields.io/github/actions/workflow/status/MayankPunghal/Hissa/ci.yml?style=for-the-badge&label=CI&labelColor=111111)](../../actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/MayankPunghal/Hissa?style=for-the-badge&labelColor=111111)](LICENSE)
+![Android 8+](https://img.shields.io/badge/Android-8.0%2B-3ddc84?style=for-the-badge&logo=android&logoColor=white&labelColor=111111)
+![Kotlin](https://img.shields.io/badge/Kotlin-Compose-7f52ff?style=for-the-badge&logo=kotlin&logoColor=white&labelColor=111111)
+![Supabase](https://img.shields.io/badge/Backend-Supabase-3ecf8e?style=for-the-badge&logo=supabase&logoColor=white&labelColor=111111)
+
+**[Download the app](../../releases/latest)** &nbsp;·&nbsp; **[Set up in 10 minutes](#how-it-works)** &nbsp;·&nbsp; **[Features](#what-you-get)** &nbsp;·&nbsp; **[Automation](#automation)**
 
 </div>
+
+An Android app for sharing expenses in groups, tracking who owes whom, and settling up. No ads, no paywall, no limits on expenses. It runs on your own free [Supabase](https://supabase.com) account, so your data stays with you.
 
 ---
 
@@ -50,6 +59,8 @@ Setup takes about 10 minutes and costs nothing:
 ---
 
 ## Step 1 · Set up the backend (5 min)
+
+> Already set up? Updates to `supabase/setup.sql` can be applied automatically, see [Automation](#automation).
 
 1. Go to [supabase.com](https://supabase.com) and sign up (free). Click **New project**, give it a name and a database password (save it somewhere, you won't need it again), pick the region nearest you (for India, **Mumbai** or **Singapore**) and click **Create**. Wait a minute or two until it finishes.
 2. In the left menu open **SQL Editor** → **New query**.
@@ -116,7 +127,7 @@ Pick **one** option.
 
 ### Option A · Download a ready-made APK (easiest)
 
-1. Open the **[Releases](../../releases)** page of this repo and download `Hissa.apk` from the latest release.
+1. Open the **[Releases](../../releases)** page of this repo and download the `.apk` from the latest release.
 2. Send it to your phone (USB, Google Drive, WhatsApp, email) and open it.
 3. Android will ask you to allow installing from this source. Allow it just for this install.
 
@@ -124,8 +135,8 @@ Pick **one** option.
 
 1. Click **Fork** at the top of this page to copy the repo to your own GitHub.
 2. In your fork, open the **Actions** tab and enable workflows if asked.
-3. Choose **Build APK** → **Run workflow**.
-4. After a few minutes open the finished run and download `Hissa-apk` from **Artifacts**. Unzip it to get `Hissa.apk`, then install it as above.
+3. Choose **Release** → **Run workflow**.
+4. After a few minutes the APK appears under **Releases** in your fork. Download and install it as above.
 
 ### Option C · Build it on your computer
 
@@ -157,13 +168,59 @@ Changes from friends appear on their own. If live updates ever stop (weak networ
 
 ---
 
+## Automation
+
+Everything below runs on GitHub for free. Set it up once and forget it.
+
+| Workflow | Runs when | What it does |
+|---|---|---|
+| **CI** (`ci.yml`) | A pull request is opened, or a feature branch is pushed | Runs the unit tests and builds a debug APK. |
+| **Release** (`release.yml`) | A pull request is merged into `main` | Tests, builds a signed APK, picks the next version, tags it and publishes a GitHub Release with `Hissa-x.y.z.apk`. |
+| **Database** (`database.yml`) | `supabase/setup.sql` changes on `main` | Runs the script on your Supabase project. No more copy and paste. |
+
+**Day-to-day flow**
+
+1. `git switch -c feature/my-change`, make changes, push the branch.
+2. Open a pull request into `main`. CI checks it.
+3. Merge. A new release appears under [Releases](../../releases) a few minutes later.
+
+**Version numbers are automatic.** Start the commit or PR title with `feat` for a new minor version (`0.3.4` becomes `0.4.0`), include `BREAKING` for a new major version, and anything else bumps the patch number (`0.3.4` becomes `0.3.5`). README, docs and SQL-only merges do not create a release.
+
+### One-time setup: repository secrets
+
+Open your repo, then **Settings → Secrets and variables → Actions → New repository secret**.
+
+| Secret | Needed for | Where to get it |
+|---|---|---|
+| `SUPABASE_DB_URL` | Database workflow | Supabase project → **Connect** → **Session pooler** → copy the URI and put your database password in place of `[YOUR-PASSWORD]`. Use the pooler address (it works over IPv4), not "Direct connection". |
+| `SUPABASE_URL`, `SUPABASE_ANON_KEY` | Baking your server into the APK so friends never type it | Supabase → **Project Settings → API**. |
+| `INVITE_BASE`, `INVITE_HOST` | Tappable invite links | `https://YOUR-NAME.github.io/Hissa/join/?code=` and `YOUR-NAME.github.io` (needs GitHub Pages on `main` and `/docs`). |
+| `RELEASE_KEYSTORE_BASE64`, `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD` | A properly signed APK | See below. |
+
+**Signing key, in plain words.** Android only installs an update over an existing app if both APKs were signed with the same secret file (the *keystore*). You create that file once, keep it safe forever, and give GitHub a copy so it signs every release the same way.
+
+1. Create it (needs Java; it asks you to choose a password and some name details):
+   ```powershell
+   keytool -genkeypair -v -keystore hissa-release.jks -alias hissa -keyalg RSA -keysize 2048 -validity 36500
+   ```
+2. Turn the file into text GitHub can store (this copies it to your clipboard):
+   ```powershell
+   [Convert]::ToBase64String([IO.File]::ReadAllBytes("hissa-release.jks")) | Set-Clipboard
+   ```
+3. Add the secrets: `RELEASE_KEYSTORE_BASE64` is what you just copied, `RELEASE_STORE_PASSWORD` is the password you chose, `RELEASE_KEY_ALIAS` is `hissa`, and `RELEASE_KEY_PASSWORD` is the same password (keytool uses one password for both unless you chose another).
+4. Keep `hissa-release.jks` somewhere safe (a password manager or cloud drive) and never commit it. If you lose it, nobody can update the app without uninstalling it first.
+
+Without these secrets the workflows still run, but the APK is signed with a throwaway debug key and asks for the server address on first launch.
+
+---
+
 ## Sharing the app (without the Play Store)
 
 You do not need the Play Store. Pick whichever suits your friends:
 
 | Way | How | Notes |
 |---|---|---|
-| **GitHub Releases** (best) | Push a tag like `v0.3`. The workflow attaches `Hissa.apk`. Share the release link. | One stable link that always has the newest build. Free. |
+| **GitHub Releases** (best) | Created automatically on every merge to `main`. Share the release link. | One stable link that always has the newest build. Free. |
 | **WhatsApp, Telegram, email** | Send `Hissa.apk` as a document. If WhatsApp refuses, rename it to `Hissa.zip` and tell friends to rename it back. | Quick for a small circle. |
 | **Google Drive or any cloud link** | Upload the APK and share the link. | Works for anyone. |
 | **Obtainium** | Friends add your GitHub repo in the [Obtainium](https://github.com/ImranR98/Obtainium) app. | Gives them automatic update notices, no store needed. |
@@ -243,7 +300,7 @@ app/src/main/java/app/hissa/
   Debts.kt          split modes + debt-simplification + money helpers (pure Kotlin, unit-tested)
 app/src/test/       unit tests
 supabase/setup.sql  complete, re-runnable backend (tables, RLS, functions, realtime)
-.github/workflows/  builds the APK on GitHub
+.github/workflows/  CI, release and database automation
 ```
 
 - **Stack:** Kotlin, Jetpack Compose, [supabase-kt](https://github.com/supabase-community/supabase-kt), Gradle.
@@ -251,7 +308,7 @@ supabase/setup.sql  complete, re-runnable backend (tables, RLS, functions, realt
 - **Security:** Row Level Security limits every read to groups you belong to. Writes go through validated SQL functions (`create_group`, `join_group`, `add_expense2`, `edit_expense`, ...), not direct inserts.
 - **Try the UI without an account:** on a debug build, run `adb shell am start -n app.hissa/.MainActivity --ez demo true` to load sample groups. It works on the Android Emulator too, so no phone is needed.
 - **Font:** [Manrope](https://github.com/sharanda/manrope) under the SIL Open Font License (`docs/fonts/Manrope-OFL.txt`).
-- **Releases:** push a tag like `v0.2` and the workflow attaches `Hissa.apk` to a GitHub Release.
+- **Releases:** automatic on merge to `main`, see [Automation](#automation).
 
 ## Roadmap
 

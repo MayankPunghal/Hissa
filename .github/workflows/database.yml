@@ -1,0 +1,22 @@
+name: Database
+# Applies supabase/setup.sql to your Supabase project whenever that file changes on main.
+# The script is written to be safe to run again. Needs the repository secret SUPABASE_DB_URL.
+on:
+  push:
+    branches: [main]
+    paths: ["supabase/setup.sql"]
+  workflow_dispatch:
+
+concurrency: database
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply setup.sql
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$DB_URL" ]; then echo "::error::Add the SUPABASE_DB_URL repository secret (see README)."; exit 1; fi
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/setup.sql

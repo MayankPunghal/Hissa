@@ -144,7 +144,7 @@ fun AvatarStack(people: List<Pair<String, String>>, size: Dp = 28.dp, max: Int =
 fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, loading: Boolean = false) {
     val cs = MaterialTheme.colorScheme
     Box(
-        modifier.fillMaxWidth().height(56.dp).clip(CircleShape)
+        modifier.fillMaxWidth().height(52.dp).clip(RoundedCornerShape(14.dp))
             .background(if (enabled) cs.primary else cs.surfaceContainerHigh)
             .pressable(enabled = enabled && !loading, onClick = onClick),
         Alignment.Center,
@@ -158,7 +158,7 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
 fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, danger: Boolean = false, muted: Boolean = false) {
     val cs = MaterialTheme.colorScheme
     Box(
-        modifier.fillMaxWidth().height(56.dp).clip(CircleShape).border(1.dp, if (danger) cs.error.copy(alpha = 0.5f) else cs.outlineVariant, CircleShape).pressable(onClick = onClick),
+        modifier.fillMaxWidth().height(52.dp).clip(RoundedCornerShape(14.dp)).background(if (danger) cs.errorContainer else cs.surfaceContainerHigh).pressable(onClick = onClick),
         Alignment.Center,
     ) { Text(text, style = MaterialTheme.typography.titleMedium, color = if (danger) cs.error else if (muted) cs.onSurfaceVariant else cs.onSurface) }
 }

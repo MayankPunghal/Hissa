@@ -20,6 +20,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material.icons.automirrored.rounded.ExitToApp
+import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -122,6 +126,16 @@ private fun ActionRow(icon: androidx.compose.ui.graphics.vector.ImageVector, tit
             Text(title, style = MaterialTheme.typography.titleMedium)
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
+    }
+}
+
+/** Plain icon + label row for destructive/leave actions. Colour carries the meaning; no border. */
+@Composable
+private fun DangerRow(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String, tint: Color, onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).clip(RoundedCornerShape(12.dp)).pressable(role = null, onClick = onClick), verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, null, Modifier.size(22.dp), tint = tint)
+        Spacer(Modifier.width(16.dp))
+        Text(text, style = MaterialTheme.typography.titleMedium, color = tint)
     }
 }
 
@@ -236,23 +250,17 @@ fun GroupSettings(g: Group, members: List<String>, net: Map<String, Long>, model
                 }
             }
 
-            SettingsTitle("Import")
-            ActionRow(Icons.Rounded.FileUpload, "Import from a file", "Splitwise export or CSV") {
-                csvPick.launch(arrayOf("text/csv", "text/comma-separated-values", "text/plain", "application/vnd.ms-excel", "application/csv"))
-            }
-
             ErrorText(err)
-            Row(verticalAlignment = Alignment.Bottom) { SettingsTitle("Leave or delete"); InfoTip("You can leave once you are settled up. Deleting removes the group and every expense for all members, and cannot be undone.") }
-            SecondaryButton(if (sureLeave) "Tap again to leave" else "Leave group", muted = true, onClick = {
+            Spacer(Modifier.height(16.dp))
+            HorizontalDivider(color = cs.outlineVariant)
+            Spacer(Modifier.height(8.dp))
+            DangerRow(Icons.AutoMirrored.Rounded.ExitToApp, if (sureLeave) "Tap again to leave" else "Leave group", cs.onSurfaceVariant) {
                 if (!sureLeave) sureLeave = true
                 else run { Api.leaveGroup(g.id); model.refresh(); snack.say("You left ${g.name}"); onGone() }
-            })
-            if (g.createdBy == me) {
-                Spacer(Modifier.height(12.dp))
-                SecondaryButton(if (sureDelete) "Tap again to delete for everyone" else "Delete group", danger = true, onClick = {
-                    if (!sureDelete) sureDelete = true
-                    else run { Api.deleteGroup(g.id); model.refresh(); snack.say("Group deleted"); onGone() }
-                })
+            }
+            if (g.createdBy == me) DangerRow(Icons.Rounded.DeleteOutline, if (sureDelete) "Tap again to delete for everyone" else "Delete group", cs.error) {
+                if (!sureDelete) sureDelete = true
+                else run { Api.deleteGroup(g.id); model.refresh(); snack.say("Group deleted"); onGone() }
             }
             Spacer(Modifier.height(32.dp))
         }

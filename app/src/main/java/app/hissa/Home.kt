@@ -42,7 +42,7 @@ import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Cloud
-import androidx.compose.material.icons.rounded.GroupAdd
+import androidx.compose.material.icons.rounded.Pin
 import androidx.compose.material.icons.rounded.Groups
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
@@ -213,7 +213,7 @@ private fun GroupsTab(model: HomeModel, onOpen: (Group) -> Unit, onJoin: () -> U
                     Box(
                         Modifier.size(48.dp).clip(CircleShape).background(cs.surfaceContainer).pressable(onClick = onJoin),
                         Alignment.Center,
-                    ) { Icon(Icons.Rounded.GroupAdd, contentDescription = "Join with a code", Modifier.size(22.dp)) }
+                    ) { Icon(Icons.Rounded.Pin, contentDescription = "Join with a code", Modifier.size(22.dp)) }
                 }
             }
             when {

@@ -208,12 +208,10 @@ private fun GroupsTab(model: HomeModel, onOpen: (Group) -> Unit, onJoin: () -> U
             item {
                 Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        val who = d?.names?.get(me) ?: ""
-                        if (who.isNotBlank()) Text("Hi, ${firstName(who)}", style = MaterialTheme.typography.bodyLarge, color = cs.onSurfaceVariant)
                         Text("Groups", style = MaterialTheme.typography.headlineLarge)
                     }
                     Box(
-                        Modifier.size(44.dp).clip(CircleShape).background(cs.surfaceContainer).pressable(onClick = onJoin),
+                        Modifier.size(48.dp).clip(CircleShape).background(cs.surfaceContainer).pressable(onClick = onJoin),
                         Alignment.Center,
                     ) { Icon(Icons.Rounded.GroupAdd, contentDescription = "Join with a code", Modifier.size(22.dp)) }
                 }

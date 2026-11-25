@@ -1,0 +1,15 @@
+# Optional. Copy to local.properties. Bakes your server into the APK so nobody has to type it in.
+# Leave it out and the app will ask for these on first launch instead.
+sdk.dir=C\:\\Users\\YOU\\AppData\\Local\\Android\\Sdk
+SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+SUPABASE_ANON_KEY=YOUR-ANON-PUBLIC-KEY
+
+# Optional: tappable invite links via GitHub Pages (see README, "Make invite links tappable")
+INVITE_BASE=https://YOU.github.io/REPO/join/?code=
+INVITE_HOST=YOU.github.io
+
+# Optional: sign the release APK with your own key (see README, "Signing your release APK")
+RELEASE_STORE_FILE=keystore/hissa-release.jks
+RELEASE_STORE_PASSWORD=
+RELEASE_KEY_ALIAS=hissa
+RELEASE_KEY_PASSWORD=

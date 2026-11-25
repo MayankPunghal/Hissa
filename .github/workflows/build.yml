@@ -1,0 +1,57 @@
+name: Build APK
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: android-actions/setup-android@v3
+
+      # Optional repository secrets (Settings > Secrets and variables > Actions). Without them you still get an installable APK,
+      # it just asks for the Supabase URL and key on first launch and is signed with a throw-away debug key.
+      - name: Write local.properties from secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          INVITE_BASE: ${{ secrets.INVITE_BASE }}
+          INVITE_HOST: ${{ secrets.INVITE_HOST }}
+          KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          {
+            echo "sdk.dir=$ANDROID_HOME"
+            [ -n "$SUPABASE_URL" ] && echo "SUPABASE_URL=$SUPABASE_URL"
+            [ -n "$SUPABASE_ANON_KEY" ] && echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+            [ -n "$INVITE_BASE" ] && echo "INVITE_BASE=$INVITE_BASE"
+            [ -n "$INVITE_HOST" ] && echo "INVITE_HOST=$INVITE_HOST"
+          } > local.properties
+          if [ -n "$KEYSTORE_B64" ]; then
+            mkdir -p keystore
+            echo "$KEYSTORE_B64" | base64 -d > keystore/hissa-release.jks
+            {
+              echo "RELEASE_STORE_FILE=keystore/hissa-release.jks"
+              echo "RELEASE_STORE_PASSWORD=$STORE_PASSWORD"
+              echo "RELEASE_KEY_ALIAS=${KEY_ALIAS:-hissa}"
+              echo "RELEASE_KEY_PASSWORD=$KEY_PASSWORD"
+            } >> local.properties
+          fi
+
+      - run: chmod +x gradlew && ./gradlew testDebugUnitTest assembleRelease --console=plain
+      - run: cp app/build/outputs/apk/release/app-release.apk Hissa.apk
+      - uses: actions/upload-artifact@v4
+        with: { name: Hissa-apk, path: Hissa.apk }
+      - if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with: { files: Hissa.apk }

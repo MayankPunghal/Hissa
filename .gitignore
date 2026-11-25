@@ -1,0 +1,15 @@
+local.properties
+.mcp.json
+*.jks
+*.keystore
+build/
+.gradle/
+.idea/
+*.log
+Hissa.apk
+keystore/
+
+.kotlin/
+.claude/
+.impeccable/review/
+.impeccable/*.ps1

@@ -1,0 +1,166 @@
+package app.hissa
+
+import android.content.Context
+import android.content.Intent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import java.time.LocalDate
+import java.time.YearMonth
+
+// ───────────────────────────── Friends ─────────────────────────────
+
+/** What one friend owes you (+) or you owe them (-) in one group. */
+data class PairLine(val group: Group, val cents: Long)
+
+/**
+ * Splitwise-style person-to-person balances: on every expense the payer is owed each other person's share.
+ * Only expenses you are part of count, and a payment simply flows the same way.
+ */
+fun pairwise(me: String, d: HomeData): Map<String, List<PairLine>> {
+    val byGroup = d.groups.associateBy { it.id }
+    val out = HashMap<String, MutableMap<String, Long>>() // friend -> groupId -> cents
+    fun add(friend: String, gid: String, c: Long) {
+        val m = out.getOrPut(friend) { HashMap() }; m[gid] = (m[gid] ?: 0L) + c
+    }
+    d.recent.forEach { e ->
+        e.transfers().forEach { t -> if (t.to == me) add(t.from, e.groupId, t.cents) else if (t.from == me) add(t.to, e.groupId, -t.cents) }
+    }
+    return out.mapValues { (_, m) -> m.mapNotNull { (gid, c) -> byGroup[gid]?.let { PairLine(it, c) } }.filter { it.cents != 0L } }
+}
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+fun FriendsTab(model: HomeModel) {
+    val cs = MaterialTheme.colorScheme
+    val sem = MaterialTheme.semantic
+    val run = rememberRunner()
+    val d = model.data
+    val me = Api.me ?: ""
+    var open by remember { mutableStateOf<String?>(null) }
+    var showSettled by remember { mutableStateOf(false) }
+    PullToRefreshBox(isRefreshing = model.loading && d != null, onRefresh = { run { model.refresh() } }, modifier = Modifier.fillMaxSize()) {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
+            item { Text("Friends", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 4.dp)) }
+            if (d == null) { item { Box(Modifier.fillMaxWidth().height(240.dp), Alignment.Center) { FullScreenLoading() } }; return@LazyColumn }
+            val pairs = pairwise(me, d)
+            val all = d.members.values.flatten().filter { it != me }.distinct()
+                .sortedWith(compareByDescending<String> { pairs[it].orEmpty().any { l -> l.cents != 0L } }.thenBy { model.fullName(it).lowercase() })
+            if (all.isEmpty()) {
+                item { EmptyState("No friends yet", "People you share a group with show up here, with what you owe each other.") }
+                return@LazyColumn
+            }
+            // Overall line, only when every balance is in one currency (otherwise adding them would mislead).
+            val every = pairs.values.flatten()
+            val curs = every.map { it.group.currency }.distinct()
+            val overall = every.sumOf { it.cents }
+            if (curs.size == 1 && overall != 0L) item {
+                Row(Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp)) {
+                    Text(if (overall > 0) "Overall, you're owed " else "Overall, you owe ", style = MaterialTheme.typography.titleMedium)
+                    Text(money(overall, curs[0]), style = MaterialTheme.typography.titleMedium, color = if (overall > 0) sem.owed else sem.owe)
+                }
+            }
+            val open0 = all.filter { pairs[it].orEmpty().isNotEmpty() }
+            val settled = all - open0.toSet()
+            val friends = if (showSettled) all else open0
+            items(friends, key = { it }) { f ->
+                val lines = pairs[f].orEmpty()
+                val cur = lines.map { it.group.currency }.distinct()
+                val total = lines.sumOf { it.cents }
+                Row(
+                    Modifier.fillMaxWidth().pressable(role = null) { open = f }.padding(horizontal = 20.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Avatar(model.fullName(f), f, 46.dp)
+                    Spacer(Modifier.width(14.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(model.fullName(f), style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        val shared = d.groups.count { f in (d.members[it.id] ?: emptyList()) }
+                        Text("$shared shared ${if (shared == 1) "group" else "groups"}", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        when {
+                            lines.isEmpty() -> Text("settled up", style = MaterialTheme.typography.labelLarge, color = cs.onSurfaceVariant)
+                            cur.size > 1 -> Text("mixed currencies", style = MaterialTheme.typography.labelLarge, color = cs.onSurfaceVariant)
+                            total > 0 -> { Text("owes you", style = MaterialTheme.typography.labelSmall, color = sem.owed); Text(money(total, cur[0]), style = MaterialTheme.typography.titleSmall, color = sem.owed) }
+                            total < 0 -> { Text("you owe", style = MaterialTheme.typography.labelSmall, color = sem.owe); Text(money(total, cur[0]), style = MaterialTheme.typography.titleSmall, color = sem.owe) }
+                            else -> Text("settled up", style = MaterialTheme.typography.labelLarge, color = cs.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+            if (settled.isNotEmpty()) item {
+                Box(Modifier.fillMaxWidth().padding(20.dp), Alignment.Center) {
+                    SecondaryButton(
+                        if (showSettled) "Hide settled-up friends" else "Show ${settled.size} settled-up ${if (settled.size == 1) "friend" else "friends"}",
+                        { showSettled = !showSettled }, Modifier.width(260.dp),
+                    )
+                }
+            }
+        }
+    }
+    open?.let { f ->
+        val lines = if (d != null) pairwise(me, d)[f].orEmpty() else emptyList()
+        AppSheet({ open = null }, model.fullName(f)) {
+            if (lines.isEmpty()) Text("You two are all settled up.", style = MaterialTheme.typography.bodyLarge, color = cs.onSurfaceVariant)
+            lines.forEach { l ->
+                Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(l.group.name, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        (if (l.cents > 0) "owes you " else "you owe ") + money(l.cents, l.group.currency),
+                        style = MaterialTheme.typography.titleSmall, color = if (l.cents > 0) sem.owed else sem.owe,
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Text("To settle, open the group and tap Settle.", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
+        }
+    }
+}
+
+/** One row per expense or payment, names resolved, ready for a spreadsheet. */
+fun groupCsv(g: Group, d: GroupData, model: HomeModel): String {
+    fun q(s: String) = "\"" + s.replace("\"", "\"\"") + "\""
+    val rows = d.expenses.sortedBy { it.date }.map { e ->
+        val who = e.splits.filter { it.shareCents > 0 }.joinToString("; ") { "${model.fullName(it.userId)} ${"%.2f".format(it.shareCents / 100.0)}" }
+        listOf(e.date, q(e.description), if (e.isSettlement) "payment" else "expense", "%.2f".format(e.amountCents / 100.0), g.currency, q(model.fullName(e.paidBy)), q(who)).joinToString(",")
+    }
+    return (listOf("Date,Description,Type,Amount,Currency,Paid by,Split") + rows).joinToString("\n")
+}
+
+fun shareCsv(ctx: Context, g: Group, csv: String) {
+    val send = Intent(Intent.ACTION_SEND).apply {
+        type = "text/csv"
+        putExtra(Intent.EXTRA_SUBJECT, "${g.name} expenses")
+        putExtra(Intent.EXTRA_TEXT, csv)
+    }
+    ctx.startActivity(Intent.createChooser(send, "Export ${g.name}"))
+}

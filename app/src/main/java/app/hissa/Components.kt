@@ -118,7 +118,9 @@ fun avatarColor(key: String) = avatarPalette[(key.hashCode() and Int.MAX_VALUE) 
 
 @Composable
 fun Avatar(name: String, key: String, size: Dp = 40.dp, modifier: Modifier = Modifier) {
-    Box(modifier.size(size).clip(CircleShape).background(avatarColor(key)), Alignment.Center) {
+    val photo = decodeGroupImage(Api.photos[key])
+    if (photo != null) Image(photo, contentDescription = null, contentScale = androidx.compose.ui.layout.ContentScale.Crop, modifier = modifier.size(size).clip(CircleShape))
+    else Box(modifier.size(size).clip(CircleShape).background(avatarColor(key)), Alignment.Center) {
         Text(initials(name), color = Color.White, fontSize = (size.value * 0.38f).sp, fontWeight = FontWeight.Bold)
     }
 }

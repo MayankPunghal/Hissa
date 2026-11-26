@@ -287,6 +287,9 @@ end $$;
 alter table public.expenses add column if not exists category text;
 alter table public.expenses add column if not exists notes text;
 alter table public.profiles add column if not exists upi_id text;
+alter table public.profiles add column if not exists image text;
+alter table public.profiles drop constraint if exists profiles_image_size;
+alter table public.profiles add constraint profiles_image_size check (image is null or length(image) < 150000);
 
 create table if not exists public.expense_payers (
   expense_id uuid not null references public.expenses(id) on delete cascade,

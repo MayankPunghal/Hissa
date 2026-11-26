@@ -165,28 +165,26 @@ fun LazyListScope.insightItems(
     // ── Over time: running total as a line. ──
     val perDay = spent.groupBy { LocalDate.parse(it.date) }.mapValues { (_, l) -> l.sumOf { it.amountCents } }.toSortedMap()
     if (perDay.size >= 2) {
-        item { SectionTitle("Running total") }
+        item { SectionTitle("Spend per day") }
         item {
-            val line = MaterialTheme.colorScheme.primary
-            val grid = MaterialTheme.colorScheme.outlineVariant
-            val first = perDay.firstKey(); val last = perDay.lastKey()
-            val span = java.time.temporal.ChronoUnit.DAYS.between(first, last).coerceAtLeast(1).toFloat()
-            var run = 0L
-            val pts = perDay.map { (day, v) -> run += v; java.time.temporal.ChronoUnit.DAYS.between(first, day) / span to run }
+            val cs = MaterialTheme.colorScheme
+            val last = perDay.lastKey()
+            val days = (13 downTo 0).map { last.minusDays(it.toLong()) }.filter { it >= perDay.firstKey() }
+            val peakDay = days.maxBy { perDay[it] ?: 0L }
+            val peak = (perDay[peakDay] ?: 1L).coerceAtLeast(1L)
             Column(Modifier.padding(horizontal = 20.dp)) {
-                Canvas(Modifier.fillMaxWidth().height(120.dp).semantics { contentDescription = "Running total rising to ${money(run, g.currency)}" }) {
-                    drawLine(grid, Offset(0f, size.height), Offset(size.width, size.height), 2f)
-                    val path = Path()
-                    pts.forEachIndexed { i, (x, y) ->
-                        val px = x * size.width
-                        val py = size.height - (y.toFloat() / run) * (size.height - 8.dp.toPx())
-                        if (i == 0) path.moveTo(px, py) else path.lineTo(px, py)
+                Row(Modifier.fillMaxWidth().height(110.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.Bottom) {
+                    days.forEach { d ->
+                        val v = perDay[d] ?: 0L
+                        Box(
+                            Modifier.weight(1f).height((100f * v / peak).coerceAtLeast(3f).dp).clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                                .background(if (d == peakDay) cs.primary else cs.primary.copy(alpha = 0.35f)),
+                        )
                     }
-                    drawPath(path, line, style = Stroke(4.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
                 }
-                Row(Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                    Text(dayLabel(first.toString()), Modifier.weight(1f), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(dayLabel(last.toString()), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(Modifier.fillMaxWidth().padding(top = 6.dp)) {
+                    Text(dayLabel(days.first().toString()), Modifier.weight(1f), style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant)
+                    Text("Peak ${dayLabel(peakDay.toString())}: ${money(peak, g.currency)}", style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant)
                 }
             }
         }

@@ -38,7 +38,7 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-@Serializable data class Profile(val id: String, val name: String = "", val email: String? = null, @SerialName("upi_id") val upiId: String? = null)
+@Serializable data class Profile(val id: String, val name: String = "", val email: String? = null, @SerialName("upi_id") val upiId: String? = null, val image: String? = null)
 @Serializable data class Group(
     val id: String, val name: String, val currency: String = "INR",
     @SerialName("invite_code") val inviteCode: String = "",
@@ -113,6 +113,8 @@ object Api {
 
     /** Debug-only sample-data mode (see [Demo]); never true in a normal launch. */
     var demo = false
+    /** Profile pictures by user id (small JPEG data URLs), filled by loadHome. Avatars read this. */
+    val photos = androidx.compose.runtime.mutableStateMapOf<String, String>()
     val me: String? get() = if (demo) Demo.ME else client?.auth?.currentUserOrNull()?.id
     val email: String get() = if (demo) "aarav@example.com" else client?.auth?.currentUserOrNull()?.email.orEmpty()
 
@@ -212,6 +214,7 @@ object Api {
                 async { g.id to (balances(g.id).firstOrNull { it.userId == me }?.netCents ?: 0L) }
             }.awaitAll().toMap()
             val ps = profiles.await()
+            ps.forEach { p -> if (p.image.isNullOrBlank()) photos.remove(p.id) else photos[p.id] = p.image }
             HomeData(
                 groups, members.await(),
                 ps.associate { it.id to it.name.ifBlank { "Friend" } },
@@ -351,6 +354,11 @@ object Api {
         if (demo) return
         val id = me ?: return
         sb.from("profiles").update({ set("upi_id", upi.trim().ifEmpty { null }) }) { filter { eq("id", id) } }
+    }
+    suspend fun setPhoto(dataUrl: String?) {
+        val id = me ?: return
+        if (!demo) sb.from("profiles").update({ set("image", dataUrl) }) { filter { eq("id", id) } }
+        if (dataUrl == null) photos.remove(id) else photos[id] = dataUrl
     }
     suspend fun myUpi(): String = if (demo) "aarav@upi" else me?.let { id ->
         sb.from("profiles").select { filter { eq("id", id) } }.decodeList<Profile>().firstOrNull()?.upiId.orEmpty()

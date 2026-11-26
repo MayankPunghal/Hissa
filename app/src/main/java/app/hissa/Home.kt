@@ -42,6 +42,7 @@ import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Cloud
+import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material.icons.rounded.Pin
 import androidx.compose.material.icons.rounded.Groups
 import androidx.compose.material.icons.rounded.Info
@@ -397,7 +398,22 @@ private fun AccountTab(model: HomeModel, openServer: () -> Unit) {
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
         item {
             Column(Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Avatar(name, me, 92.dp)
+                var menu by remember { mutableStateOf(false) }
+                val ctx = androidx.compose.ui.platform.LocalContext.current
+                val pick = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia()) { uri ->
+                    uri?.let { u -> encodeGroupImage(ctx, u)?.let { img -> run { Api.setPhoto(img) } } }
+                }
+                val choose = { pick.launch(androidx.activity.result.PickVisualMediaRequest(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+                Box {
+                    Box(Modifier.clip(CircleShape).pressable(role = null) { if (Api.photos.containsKey(me)) menu = true else choose() }) { Avatar(name, me, 92.dp) }
+                    Box(Modifier.align(Alignment.BottomEnd).size(32.dp).clip(CircleShape).background(cs.primary), Alignment.Center) {
+                        Icon(Icons.Rounded.CameraAlt, "Change photo", Modifier.size(18.dp), tint = cs.onPrimary)
+                    }
+                    androidx.compose.material3.DropdownMenu(menu, { menu = false }) {
+                        androidx.compose.material3.DropdownMenuItem({ Text("Choose a photo") }, { menu = false; choose() })
+                        androidx.compose.material3.DropdownMenuItem({ Text("Remove photo", color = cs.error) }, { menu = false; run { Api.setPhoto(null) } })
+                    }
+                }
                 Spacer(Modifier.height(16.dp))
                 Text(name, style = MaterialTheme.typography.headlineMedium)
                 Text(email, style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant)

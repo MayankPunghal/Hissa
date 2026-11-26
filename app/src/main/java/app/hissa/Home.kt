@@ -43,7 +43,7 @@ import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Cloud
 import androidx.compose.material.icons.rounded.CameraAlt
-import androidx.compose.material.icons.rounded.Pin
+import androidx.compose.material.icons.automirrored.rounded.Login
 import androidx.compose.material.icons.rounded.Groups
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
@@ -214,7 +214,7 @@ private fun GroupsTab(model: HomeModel, onOpen: (Group) -> Unit, onJoin: () -> U
                     Box(
                         Modifier.size(48.dp).clip(CircleShape).background(cs.surfaceContainer).pressable(onClick = onJoin),
                         Alignment.Center,
-                    ) { Icon(Icons.Rounded.Pin, contentDescription = "Join with a code", Modifier.size(22.dp)) }
+                    ) { Icon(Icons.AutoMirrored.Rounded.Login, contentDescription = "Join with a code", Modifier.size(22.dp)) }
                 }
             }
             when {
@@ -246,17 +246,9 @@ private fun Summary(d: HomeData) {
     val cs = MaterialTheme.colorScheme
     val cur = d.groups.firstOrNull()?.currency ?: "INR"
     val net = d.groups.filter { it.currency == cur }.sumOf { d.myNet[it.id] ?: 0L }
-    Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
-        Row {
-            Text(
-                when { d.groups.isEmpty() -> "No balances yet"; net > 0 -> "Overall, you're owed "; net < 0 -> "Overall, you owe "; else -> "You're all settled up" },
-                style = MaterialTheme.typography.titleLarge,
-            )
-            if (net != 0L) Text(money(net, cur), style = MaterialTheme.typography.titleLarge, color = if (net > 0) sem.owed else sem.owe)
-        }
-        if (d.groups.any { it.currency != cur }) {
-            InfoTip("Groups in other currencies are not included.")
-        }
+    if (d.groups.isNotEmpty()) Row(Modifier.padding(horizontal = 20.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+        BalanceHero(net, cur, Modifier.weight(1f))
+        if (d.groups.any { it.currency != cur }) InfoTip("Groups in other currencies are not included.")
     }
 }
 

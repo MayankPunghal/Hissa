@@ -142,10 +142,7 @@ fun FriendsTab(model: HomeModel) {
             val curs = every.map { it.group.currency }.distinct()
             val overall = every.sumOf { it.cents }
             if (curs.size == 1 && overall != 0L) item {
-                Row(Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp)) {
-                    Text(if (overall > 0) "Overall, you're owed " else "Overall, you owe ", style = MaterialTheme.typography.titleMedium)
-                    Text(money(overall, curs[0]), style = MaterialTheme.typography.titleMedium, color = if (overall > 0) sem.owed else sem.owe)
-                }
+                BalanceHero(overall, curs[0], Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 8.dp))
             }
             val open0 = all.filter { pairs[it].orEmpty().isNotEmpty() }
             fun owing(f: String) = pairs[f].orEmpty().sumOf { it.cents }

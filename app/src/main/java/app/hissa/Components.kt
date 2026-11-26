@@ -142,17 +142,33 @@ fun AvatarStack(people: List<Pair<String, String>>, size: Dp = 28.dp, max: Int =
     }
 }
 
+/** The headline number: a tinted card, green when owed, red when owing, neutral when settled. */
+@Composable
+fun BalanceHero(cents: Long, currency: String, modifier: Modifier = Modifier) {
+    val sem = MaterialTheme.semantic
+    val cs = MaterialTheme.colorScheme
+    val (bg, fg, label) = when {
+        cents > 0 -> Triple(sem.owedBg, sem.owed, "You're owed")
+        cents < 0 -> Triple(sem.oweBg, sem.owe, "You owe")
+        else -> Triple(cs.surfaceContainer, cs.onSurfaceVariant, "All settled up")
+    }
+    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(bg).padding(horizontal = 20.dp, vertical = 16.dp)) {
+        Text(label, style = MaterialTheme.typography.labelLarge, color = fg)
+        if (cents != 0L) Text(money(cents, currency), style = MaterialTheme.typography.displaySmall, color = fg)
+    }
+}
+
 @Composable
 fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, loading: Boolean = false) {
     val cs = MaterialTheme.colorScheme
     Box(
         modifier.fillMaxWidth().height(52.dp).clip(RoundedCornerShape(14.dp))
-            .background(if (enabled) cs.primary else cs.surfaceContainerHigh)
+            .background(if (enabled) cs.inverseSurface else cs.surfaceContainerHigh)
             .pressable(enabled = enabled && !loading, onClick = onClick),
         Alignment.Center,
     ) {
-        if (loading) CircularProgressIndicator(Modifier.size(22.dp), color = cs.onPrimary, strokeWidth = 2.5.dp)
-        else Text(text, style = MaterialTheme.typography.titleMedium, color = if (enabled) cs.onPrimary else cs.onSurfaceVariant)
+        if (loading) CircularProgressIndicator(Modifier.size(22.dp), color = cs.inverseOnSurface, strokeWidth = 2.5.dp)
+        else Text(text, style = MaterialTheme.typography.titleMedium, color = if (enabled) cs.inverseOnSurface else cs.onSurfaceVariant)
     }
 }
 

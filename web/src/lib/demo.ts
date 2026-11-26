@@ -42,7 +42,7 @@ export const home = (): HomeData => {
   const mine = groups.filter((g) => members[g.id].includes(ME));
   return {
     groups: mine, members: { ...members }, names: { ...names }, myNet: Object.fromEntries(mine.map((g) => [g.id, net(g.id)[ME] ?? 0])),
-    recent: expenses.filter((e) => mine.some((g) => g.id === e.group_id)).sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0)), upis: { u1: "asha@upi" }, phones: {},
+    recent: expenses.filter((e) => mine.some((g) => g.id === e.group_id)).sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0)), upis: { u1: "asha@upi", u2: "ravi@upi" }, phones: { u2: "9812345670" },
   };
 };
 export const group = (gid: string): GroupData => ({ members: members[gid], expenses: expenses.filter((e) => e.group_id === gid).sort((a, b) => (a.expense_date < b.expense_date ? 1 : a.expense_date > b.expense_date ? -1 : 0)), net: net(gid) });

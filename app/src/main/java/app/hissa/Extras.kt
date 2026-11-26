@@ -201,6 +201,31 @@ fun FriendsTab(model: HomeModel) {
             if (plan.isNotEmpty()) {
                 if (plan.size > 1) Text("Across groups: ${netText()}", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant)
                 ErrorText(err)
+                // You owe them in rupees: pay now from a UPI app, or copy their number, then record it with Settle all.
+                val owe = net.entries.singleOrNull()?.takeIf { it.key == "INR" && it.value < 0 }
+                if (owe != null) {
+                    val ctx = androidx.compose.ui.platform.LocalContext.current
+                    val upi = d?.upis?.get(f); val phone = d?.phones?.get(f)
+                    if (upi != null) {
+                        Spacer(Modifier.height(16.dp))
+                        SecondaryButton("Pay $who with a UPI app", {
+                            val uri = android.net.Uri.Builder().scheme("upi").authority("pay")
+                                .appendQueryParameter("pa", upi).appendQueryParameter("pn", model.fullName(f))
+                                .appendQueryParameter("am", "%.2f".format(-owe.value / 100.0)).appendQueryParameter("cu", "INR")
+                                .appendQueryParameter("tn", "Hissa").build()
+                            try { ctx.startActivity(Intent(Intent.ACTION_VIEW, uri)) } catch (e: Exception) { err = "No UPI app found on this phone." }
+                        })
+                    }
+                    if (phone != null) {
+                        Spacer(Modifier.height(if (upi != null) 8.dp else 16.dp))
+                        SecondaryButton("Copy $who's number  $phone", {
+                            (ctx.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager)
+                                .setPrimaryClip(android.content.ClipData.newPlainText("Mobile number", phone))
+                            android.widget.Toast.makeText(ctx, "Copied. Paste it in Pay to number in your UPI app.", android.widget.Toast.LENGTH_LONG).show()
+                        })
+                    }
+                    if (upi != null || phone != null) Text("Paid already? Tap Settle all to record it.", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
+                }
                 Spacer(Modifier.height(20.dp))
                 PrimaryButton("Settle all with $who", { confirm = true }, loading = busy)
             }

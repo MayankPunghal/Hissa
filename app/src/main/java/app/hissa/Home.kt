@@ -177,14 +177,7 @@ private fun Tabs(model: HomeModel, tab: Int, setTab: (Int) -> Unit, onOpen: (Gro
             }
         },
         floatingActionButton = {
-            if (tab == 0) ExtendedFloatingActionButton(
-                onClick = { sheet = "new" }, containerColor = cs.primary, contentColor = cs.onPrimary,
-                shape = CircleShape, elevation = androidx.compose.material3.FloatingActionButtonDefaults.elevation(2.dp, 2.dp, 2.dp, 2.dp),
-            ) {
-                Icon(Icons.Rounded.Add, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("New group", style = MaterialTheme.typography.titleSmall)
-            }
+            if (tab == 0) GlassFab(haze, "New group") { sheet = "new" }
         },
     ) { pad ->
         Box(Modifier.padding(top = pad.calculateTopPadding()).fillMaxSize().hazeSource(haze)) {

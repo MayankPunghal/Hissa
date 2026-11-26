@@ -15,6 +15,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.material.icons.rounded.Add
+import dev.chrisbanes.haze.hazeEffect
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -333,3 +335,26 @@ fun Modifier.enterIn(index: Int): Modifier = if (index > 9) this else composed {
     }
     graphicsLayer { alpha = p.value; translationY = (1f - p.value) * 24.dp.toPx() }
 }
+
+/** Extended FAB as glass: keeps the primary colour but lets the list blur through it (Android 12+; older phones get the tint alone). */
+@Composable
+fun GlassFab(haze: dev.chrisbanes.haze.HazeState, text: String, onClick: () -> Unit) {
+    val cs = MaterialTheme.colorScheme
+    androidx.compose.material3.ExtendedFloatingActionButton(
+        onClick = onClick, containerColor = androidx.compose.ui.graphics.Color.Transparent, contentColor = cs.onPrimary,
+        shape = androidx.compose.foundation.shape.CircleShape,
+        elevation = androidx.compose.material3.FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+        modifier = Modifier
+            .clip(androidx.compose.foundation.shape.CircleShape)
+            .dev_hazeGlass(haze, cs.primary)
+            .border(1.dp, androidx.compose.ui.graphics.Color.White.copy(alpha = 0.28f), androidx.compose.foundation.shape.CircleShape),
+    ) {
+        androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Rounded.Add, null)
+        androidx.compose.foundation.layout.Spacer(Modifier.width(8.dp))
+        androidx.compose.material3.Text(text, style = MaterialTheme.typography.titleSmall)
+    }
+}
+
+private fun Modifier.dev_hazeGlass(haze: dev.chrisbanes.haze.HazeState, tint: androidx.compose.ui.graphics.Color) = this.hazeEffect(
+    haze, dev.chrisbanes.haze.HazeStyle(backgroundColor = tint, tints = listOf(dev.chrisbanes.haze.HazeTint(tint.copy(alpha = 0.6f))), blurRadius = 20.dp, noiseFactor = 0.04f),
+)

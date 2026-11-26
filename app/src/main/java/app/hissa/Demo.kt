@@ -63,7 +63,8 @@ object Demo {
             mine, members, names,
             mine.associate { it.id to (net(it.id)[ME] ?: 0L) },
             expenses.filter { e -> mine.any { it.id == e.groupId } }.sortedByDescending { it.createdAt },
-            mapOf("u1" to "asha@upi"),
+            mapOf("u1" to "asha@upi", "u2" to "ravi@upi"),
+            mapOf("u2" to "9812345670"),
         )
     }
 

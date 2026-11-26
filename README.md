@@ -14,7 +14,7 @@
 ![Kotlin](https://img.shields.io/badge/Kotlin-Jetpack_Compose-7f52ff?style=for-the-badge&logo=kotlin&logoColor=white&labelColor=111111)
 ![Supabase](https://img.shields.io/badge/Backend-Supabase-3ecf8e?style=for-the-badge&logo=supabase&logoColor=white&labelColor=111111)
 
-**[⬇ Download the APK](https://github.com/MayankPunghal/Hissa/releases/latest)** &nbsp;·&nbsp; **[⚡ Set up in 10 minutes](#quick-start)** &nbsp;·&nbsp; **[✨ Features](#what-you-get)** &nbsp;·&nbsp; **[🌐 Website](https://mayankpunghal.github.io/Hissa/)**
+**[⬇ Download the APK](https://github.com/MayankPunghal/Hissa/releases/latest)** &nbsp;·&nbsp; **[⚡ Set up in 10 minutes](#quick-start)** &nbsp;·&nbsp; **[✨ Features](#what-you-get)** &nbsp;·&nbsp; **[📱 Web app](https://mayankpunghal.github.io/Hissa/app/)** &nbsp;·&nbsp; **[🌐 Website](https://mayankpunghal.github.io/Hissa/)**
 
 <br>
 
@@ -22,9 +22,31 @@
 
 </div>
 
-**Hissa** is a free and open-source expense splitter for Android, built as an alternative to **Splitwise**, Splid and Tricount. Track shared expenses in groups, see who owes whom, simplify debts and settle up, all without ads, expense limits or a subscription. It runs on your own free [Supabase](https://supabase.com) project, so there is no company in the middle and your data stays with you. Licensed under the [MIT License](LICENSE).
+**Hissa** is a free and open-source expense splitter for Android and the web, built as an alternative to **Splitwise**, Splid and Tricount. Track shared expenses in groups, see who owes whom, simplify debts and settle up, all without ads, expense limits or a subscription. It runs on your own free [Supabase](https://supabase.com) project, so there is no company in the middle and your data stays with you. Licensed under the [MIT License](LICENSE).
 
 > ⭐ **If Hissa saves you from an awkward "who paid for what" chat, please [star the repo](https://github.com/MayankPunghal/Hissa). It is the single best way to help other people find it.**
+
+
+---
+
+## See it work
+
+<table>
+  <tr>
+    <td align="center" width="25%"><b>Tour</b><br><sub>groups, balances, insights</sub></td>
+    <td align="center" width="25%"><b>Add an expense</b><br><sub>five ways to split</sub></td>
+    <td align="center" width="25%"><b>Settle up</b><br><sub>fewest payments</sub></td>
+    <td align="center" width="25%"><b>Dark mode</b><br><sub>follows your phone</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/demo/tour.gif" alt="Hissa tour: opening a group, expenses, balances, spending insights, then the Friends and Activity tabs" width="100%"></td>
+    <td align="center"><img src="docs/demo/add-expense.gif" alt="Adding an expense: amount, description, then switching between equal, exact, percent, shares and item splits" width="100%"></td>
+    <td align="center"><img src="docs/demo/settle-up.gif" alt="Settling up: the simplified balances and recording a payment" width="100%"></td>
+    <td align="center"><img src="docs/demo/dark-mode.gif" alt="Hissa in dark mode: groups, a group's expenses and balances, and the Friends tab" width="100%"></td>
+  </tr>
+</table>
+
+<sub>Recorded on the Android emulator with the built-in demo data, so nothing here is a real person.</sub>
 
 ---
 
@@ -38,13 +60,13 @@
 | Open source (MIT) | **Yes, read and change every line** | No |
 | Your data | **In your own database, export any time** | On their servers |
 | Itemised bills with tax and tip | **Free** | Pro |
-| Receipt scanning | **Free, on your phone, nothing uploaded** | Pro |
+| Receipt photos on an expense | **Free** | Pro |
 | Charts and CSV export | **Free** | Pro |
 | Pay by UPI in one tap | **Yes** | No |
 | Self-hostable | **Yes** | No |
-| Platforms | Android | Android, iOS, web |
+| Platforms | Android and installable web app | Android, iOS, web |
 
-Honest trade-off: Hissa is Android only for now, and you (or one friend) create a free Supabase project once, which takes about 10 minutes. After that everyone just installs the app. If you want zero setup and iOS, Splitwise is the easier pick. If you want free, private and open, use Hissa.
+Honest trade-off: Hissa has an Android app and an installable web app (no native iOS app yet), and you (or one friend) create a free Supabase project once, which takes about 10 minutes. After that everyone just installs the app. If you want zero setup and iOS, Splitwise is the easier pick. If you want free, private and open, use Hissa.
 
 Splitwise is a trademark of its owner. Hissa is an independent project and is not affiliated with Splitwise. Comparison reflects Splitwise's public plans at the time of writing and may change.
 
@@ -57,7 +79,7 @@ You need: an Android phone, a free Supabase account and about 10 minutes. No cod
 | | Step | Time |
 |:--:|---|:--:|
 | **1** | **Create the backend.** Sign up at [supabase.com](https://supabase.com), create a project, open **SQL Editor**, paste [`supabase/setup.sql`](supabase/setup.sql) and press **Run**. [Full steps](#step-1--set-up-the-backend-5-min) | 5 min |
-| **2** | **Install the app.** Download the APK from [Releases](https://github.com/MayankPunghal/Hissa/releases/latest) and open it on your phone. [Other ways](#step-2--get-the-app) | 2 min |
+| **2** | **Install the app.** Download the APK from [Releases](https://github.com/MayankPunghal/Hissa/releases/latest) and open it on your phone, or just open the [web app](https://mayankpunghal.github.io/Hissa/app/) and add it to your home screen. [Other ways](#step-2--get-the-app) | 2 min |
 | **3** | **Connect and invite.** Paste your Supabase **Project URL** and **anon key** into the app, sign up, create a group and share the invite link. [Details](#step-3--connect-and-use-it) | 3 min |
 
 Stuck? See [Troubleshooting](#troubleshooting) or [open an issue](https://github.com/MayankPunghal/Hissa/issues/new/choose).
@@ -68,7 +90,7 @@ Stuck? See [Troubleshooting](#troubleshooting) or [open an issue](https://github
 
 - **Groups** for trips, flatmates, dinners or anything else, joined with a tappable invite link or a short code.
 - **Split any way.** One person or **several people can pay** (equally, exact amounts, percentages or shares), and the cost can be split **equally**, by **exact amounts**, **percentages**, **shares**, or **item by item** with tax and tip shared in proportion. The odd paise are handled exactly.
-- **Scan a receipt.** Take or pick a photo and Hissa reads the total and the items on the phone (no upload).
+- **Attach a photo** of the receipt (or anything) to an expense, from the camera or gallery, and open it full screen later.
 - **Categories** with icons, guessed from what you type ("Uber to airport" becomes Transport).
 - **Repeating expenses** (weekly or monthly), **edit** any expense, **notes** and a **date** picker, and a **default split** you can save per group.
 - **Search** expenses and activity.
@@ -99,7 +121,7 @@ Not built yet: push notifications, translations and other currencies (everything
 
 **Can I import my Splitwise data?** Not yet. See the [Roadmap](#roadmap).
 
-**Can I use it on iPhone?** Not yet. Hissa is Android only for now.
+**Can I use it on iPhone?** Yes, as a web app: open the [web app](https://mayankpunghal.github.io/Hissa/app/) in Safari and use Share → Add to Home Screen. There is no native iOS app yet.
 
 **Can I use it for trips, roommates and couples?** Yes. Create one group per trip, flat or relationship and invite everyone with a link.
 
@@ -330,7 +352,7 @@ Shared invites then look like `https://YOU.github.io/REPO/join/?code=abc12345`, 
 |---|---|
 | **Cost** | Free. Supabase's free plan has 500 MB of storage, which is plenty for years of group expenses. |
 | **Inactive projects** | Free Supabase projects pause after about a week with no use. Open your Supabase dashboard and click **Restore**. Nothing is lost. |
-| **Who can use it** | Android only. Everyone must connect to the same Supabase project. |
+| **Who can use it** | Android, plus the web app on any phone or computer. Everyone must connect to the same Supabase project. |
 | **Updating** | Install a newer APK over the old one. Your data stays in Supabase. |
 | **Your data** | Lives in your Supabase project. You can export it from the Table Editor at any time. |
 | **Upgrading from an earlier version** | Run the latest `supabase/setup.sql` again (safe to repeat). It adds multiple payers, categories, repeating expenses, group editing, leave and delete. |
@@ -378,7 +400,7 @@ supabase/setup.sql  complete, re-runnable backend (tables, RLS, functions, realt
 - [ ] Adding expenses while offline (reading offline works)
 - [ ] Push notifications
 - [x] Signed release APK
-- [ ] Languages other than English, other currencies, import from Splitwise, iOS, Play Store listing
+- [ ] Languages other than English, other currencies, import from Splitwise, a native iOS app, Play Store listing
 
 Contributions and issues are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md). Ideas to start with: a new language, a new currency, Splitwise CSV import.
 

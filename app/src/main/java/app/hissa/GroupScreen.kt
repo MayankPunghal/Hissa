@@ -50,6 +50,7 @@ import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import dev.chrisbanes.haze.hazeSource
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -123,21 +124,14 @@ fun GroupScreen(g: Group, model: HomeModel, focusExpense: String? = null, onBack
     BackHandler(searching && !adding) { searching = false; query = "" }
     fun n(id: String) = model.name(id)
 
+    val haze = remember { dev.chrisbanes.haze.HazeState() }
     Box(Modifier.fillMaxSize()) {
         Scaffold(
             containerColor = cs.background,
-            floatingActionButton = {
-                ExtendedFloatingActionButton(
-                    onClick = { adding = true }, containerColor = cs.primary, contentColor = cs.onPrimary, shape = CircleShape,
-                    elevation = FloatingActionButtonDefaults.elevation(2.dp, 2.dp, 2.dp, 2.dp),
-                ) {
-                    Icon(Icons.Rounded.Add, null)
-                    Spacer(Modifier.width(8.dp)); Text("Add expense", style = MaterialTheme.typography.titleSmall)
-                }
-            },
+            floatingActionButton = { GlassFab(haze, "Add expense") { adding = true } },
         ) { pad ->
             PullToRefreshBox(
-                isRefreshing = refreshing, modifier = Modifier.padding(pad).fillMaxSize(),
+                isRefreshing = refreshing, modifier = Modifier.padding(pad).fillMaxSize().hazeSource(haze),
                 onRefresh = { run { refreshing = true; try { reload(); model.refresh(live = true) } finally { refreshing = false } } },
             ) {
                 LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 112.dp)) {

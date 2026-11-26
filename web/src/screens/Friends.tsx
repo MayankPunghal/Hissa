@@ -6,7 +6,7 @@ import * as api from "../lib/api";
 import { settleAll, settleAllPlan, settleNet, pairwise } from "../lib/extras";
 import { firstName, money } from "../lib/format";
 import { fullName, home, refresh } from "../lib/model";
-import { Avatar, BalanceHero, EmptyState, ErrorText, FullScreenLoading, IconButton, PrimaryButton, Spinner, AppSheet, TextButton, runner, say } from "../ui/ui";
+import { Avatar, BalanceHero, EmptyState, ErrorText, FullScreenLoading, IconButton, PrimaryButton, SecondaryButton, Spinner, AppSheet, TextButton, runner, say } from "../ui/ui";
 import { AddPeopleSheet } from "./AddPeople";
 
 /** Scrollable tab body with pull-to-refresh (PullToRefreshBox). Content runs under the frosted bar, like Android. */
@@ -19,7 +19,7 @@ export function TabScroll({ children, pad, onRefresh }: { children: ComponentChi
   return (
     <div ref={el} class="tab-scroll" onTouchStart={start} onTouchMove={move} onTouchEnd={end}>
       {(pull > 8 || busy) && <div class="circle" style={{ position: "absolute", left: "50%", top: pull - 44, marginLeft: -20, width: 40, height: 40, background: "var(--surface-high)", boxShadow: "0 1px 4px rgba(0,0,0,.25)", zIndex: 5 }}><Spinner size={24} /></div>}
-      <div style={{ paddingBottom: pad, transform: pull ? `translateY(${pull * 0.4}px)` : undefined, transition: pull ? undefined : "transform .2s" }}>{children}</div>
+      <div style={{ paddingBottom: `calc(${pad}px + 80px + var(--safe-bottom))`, transform: pull ? `translateY(${pull * 0.4}px)` : undefined, transition: pull ? undefined : "transform .2s" }}>{children}</div>
     </div>
   );
 }
@@ -105,7 +105,24 @@ export function FriendsTab() {
         ))}
         {plan.length > 0 && <>
           {plan.length > 1 && <div class="t-body-m muted" style={{ paddingTop: 8 }}>Across groups: {netText()}</div>}
-          <ErrorText msg={err} /><div style={{ height: 20 }} />
+          <ErrorText msg={err} />
+          {(() => {
+            // You owe them in rupees: pay now from a UPI app, or copy their number, then record it with Settle all.
+            const owe = Object.keys(net).length === 1 && net.INR < 0 ? -net.INR : 0;
+            const upi = d?.upis[f]; const phone = d?.phones[f];
+            if (!owe || (!upi && !phone)) return null;
+            const pay = () => {
+              if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { setErr("No UPI app found on this device."); return; }
+              location.href = `upi://pay?${new URLSearchParams({ pa: upi!, pn: fullName(f), am: (owe / 100).toFixed(2), cu: "INR", tn: "Hissa" })}`;
+            };
+            const copy = async () => { try { await navigator.clipboard.writeText(phone!); say("Copied. Paste it in Pay to number in your UPI app."); } catch { setErr("Couldn't copy the number."); } };
+            return <>
+              {upi && <><div style={{ height: 16 }} /><SecondaryButton text={`Pay ${who} with a UPI app`} onClick={pay} /></>}
+              {phone && <><div style={{ height: upi ? 8 : 16 }} /><SecondaryButton text={`Copy ${who}'s number  ${phone}`} onClick={copy} /></>}
+              <div class="t-body-s muted" style={{ paddingTop: 8 }}>Paid already? Tap Settle all to record it.</div>
+            </>;
+          })()}
+          <div style={{ height: 20 }} />
           <PrimaryButton text={`Settle all with ${who}`} onClick={() => setConfirm(true)} loading={busy} />
         </>}
       </AppSheet>

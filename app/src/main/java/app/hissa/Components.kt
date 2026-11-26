@@ -308,7 +308,7 @@ fun InfoTip(text: String, modifier: Modifier = Modifier) {
         tooltip = { PlainTooltip { Text(text) } },
         state = state, modifier = modifier,
     ) {
-        androidx.compose.material3.IconButton({ scope.launch { if (state.isVisible) state.dismiss() else state.show() } }, Modifier.size(32.dp)) {
+        androidx.compose.material3.IconButton({ scope.launch { if (state.isVisible) state.dismiss() else state.show() } }, Modifier.size(44.dp)) {
             Icon(androidx.compose.material.icons.Icons.Outlined.Info, contentDescription = "More info: $text", Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }

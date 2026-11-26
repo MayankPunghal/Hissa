@@ -9,7 +9,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -52,7 +54,14 @@ class MainActivity : ComponentActivity() {
                 enableEdgeToEdge(statusBarStyle = bar, navigationBarStyle = bar)
                 onDispose { }
             }
-            HissaTheme { Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) { App() } }
+            HissaTheme {
+                Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                    // On tablets and in landscape, keep the phone layout in a centred column instead of stretching it.
+                    androidx.compose.foundation.layout.Box(Modifier.fillMaxSize(), Alignment.TopCenter) {
+                        androidx.compose.foundation.layout.Box(Modifier.widthIn(max = 640.dp).fillMaxHeight()) { App() }
+                    }
+                }
+            }
         }
     }
 }

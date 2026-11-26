@@ -131,7 +131,7 @@ fun GroupScreen(g: Group, model: HomeModel, focusExpense: String? = null, onBack
                     elevation = FloatingActionButtonDefaults.elevation(2.dp, 2.dp, 2.dp, 2.dp),
                 ) {
                     Icon(Icons.Rounded.Add, null)
-                    if (tab == 0) { Spacer(Modifier.width(8.dp)); Text("Add expense", style = MaterialTheme.typography.titleSmall) }
+                    Spacer(Modifier.width(8.dp)); Text("Add expense", style = MaterialTheme.typography.titleSmall)
                 }
             },
         ) { pad ->
@@ -252,6 +252,21 @@ fun GroupScreen(g: Group, model: HomeModel, focusExpense: String? = null, onBack
                             }
                         }
                     } else if (tab == 1) {
+                        // The actionable part comes first: what to pay (yours on top), then who is owed what.
+                        val plan = (if (Api.simplifyDebts(g.id)) simplify(d.net) else rawTransfers(d.expenses)).sortedByDescending { it.from == me }
+                        item { SectionTitle("Settle up") }
+                        if (plan.isEmpty()) item { Text("Hisaab barabar! Everyone is even.", style = MaterialTheme.typography.bodyLarge, color = cs.onSurfaceVariant, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) }
+                        items(plan, key = { "t${it.from}${it.to}" }) { t ->
+                            Row(Modifier.animateItem().fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Column(Modifier.weight(1f)) {
+                                    Text("${n(t.from)} ${if (t.from == me) "pay" else "pays"} ${n(t.to)}", style = MaterialTheme.typography.titleMedium)
+                                    Text(money(t.cents, g.currency), style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant)
+                                }
+                                if (t.from == me) Box(
+                                    Modifier.clip(CircleShape).background(cs.primary).pressable { settle = t }.padding(horizontal = 20.dp, vertical = 10.dp),
+                                ) { Text("Settle", style = MaterialTheme.typography.labelLarge, color = cs.onPrimary) }
+                            }
+                        }
                         item { SectionTitle("Who's owed what") }
                         items(d.members, key = { "m$it" }) { m ->
                             val v = d.net[m] ?: 0L
@@ -264,20 +279,6 @@ fun GroupScreen(g: Group, model: HomeModel, focusExpense: String? = null, onBack
                                     v < 0 -> Text("${if (m == me) "owe" else "owes"} ${money(v, g.currency)}", style = MaterialTheme.typography.titleSmall, color = sem.owe)
                                     else -> Text("settled", style = MaterialTheme.typography.titleSmall, color = cs.onSurfaceVariant)
                                 }
-                            }
-                        }
-                        val plan = if (Api.simplifyDebts(g.id)) simplify(d.net) else rawTransfers(d.expenses)
-                        item { SectionTitle("Settle up") }
-                        if (plan.isEmpty()) item { Text("Hisaab barabar! Everyone is even.", style = MaterialTheme.typography.bodyLarge, color = cs.onSurfaceVariant, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) }
-                        items(plan, key = { "t${it.from}${it.to}" }) { t ->
-                            Row(Modifier.animateItem().fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Column(Modifier.weight(1f)) {
-                                    Text("${n(t.from)} ${if (t.from == me) "pay" else "pays"} ${n(t.to)}", style = MaterialTheme.typography.titleMedium)
-                                    Text(money(t.cents, g.currency), style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant)
-                                }
-                                if (t.from == me) Box(
-                                    Modifier.clip(CircleShape).background(cs.primary).pressable { settle = t }.padding(horizontal = 20.dp, vertical = 10.dp),
-                                ) { Text("Settle", style = MaterialTheme.typography.labelLarge, color = cs.onPrimary) }
                             }
                         }
                     } else {

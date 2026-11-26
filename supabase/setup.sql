@@ -288,6 +288,9 @@ alter table public.expenses add column if not exists category text;
 alter table public.expenses add column if not exists notes text;
 alter table public.profiles add column if not exists upi_id text;
 alter table public.profiles add column if not exists image text;
+alter table public.profiles add column if not exists phone text;
+alter table public.profiles drop constraint if exists profiles_phone_fmt;
+alter table public.profiles add constraint profiles_phone_fmt check (phone is null or phone ~ '^[0-9]{10}$');
 alter table public.profiles drop constraint if exists profiles_image_size;
 alter table public.profiles add constraint profiles_image_size check (image is null or length(image) < 150000);
 

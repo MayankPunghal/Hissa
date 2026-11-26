@@ -385,7 +385,15 @@ fun GroupScreen(g: Group, model: HomeModel, focusExpense: String? = null, onBack
                         .appendQueryParameter("tn", "Hissa: ${g.name}").build()
                     try { ctx.startActivity(Intent(Intent.ACTION_VIEW, uri)) } catch (e: Exception) { err = "No UPI app found on this phone." }
                 })
-
+            }
+            val phone = model.data?.phones?.get(t.to)
+            if (phone != null && g.currency == "INR") {
+                Spacer(Modifier.height(if (upi != null) 8.dp else 16.dp))
+                SecondaryButton("Copy ${firstName(model.fullName(t.to))}'s number  $phone", {
+                    (ctx.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager)
+                        .setPrimaryClip(android.content.ClipData.newPlainText("Mobile number", phone))
+                    android.widget.Toast.makeText(ctx, "Copied. Paste it in Pay to number in your UPI app.", android.widget.Toast.LENGTH_LONG).show()
+                })
             }
             Spacer(Modifier.height(24.dp))
             PrimaryButton("Record payment", loading = busy, onClick = {

@@ -43,7 +43,8 @@ import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Cloud
 import androidx.compose.material.icons.rounded.CameraAlt
-import androidx.compose.material.icons.automirrored.rounded.Login
+import androidx.compose.material.icons.rounded.Key
+import androidx.compose.material.icons.rounded.Phone
 import androidx.compose.material.icons.rounded.Groups
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
@@ -207,14 +208,18 @@ private fun GroupsTab(model: HomeModel, onOpen: (Group) -> Unit, onJoin: () -> U
     PullToRefreshBox(isRefreshing = model.loading && d != null, onRefresh = { run { model.refresh() } }, modifier = Modifier.fillMaxSize()) {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 112.dp)) {
             item {
-                Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text("Groups", style = MaterialTheme.typography.headlineLarge)
                     }
-                    Box(
-                        Modifier.size(48.dp).clip(CircleShape).background(cs.surfaceContainer).pressable(onClick = onJoin),
-                        Alignment.Center,
-                    ) { Icon(Icons.AutoMirrored.Rounded.Login, contentDescription = "Join with a code", Modifier.size(22.dp)) }
+                    Row(
+                        Modifier.height(44.dp).clip(CircleShape).background(cs.surfaceContainer).pressable(onClick = onJoin).padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Rounded.Key, null, Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Join", style = MaterialTheme.typography.labelLarge)
+                    }
                 }
             }
             when {
@@ -383,7 +388,12 @@ private fun AccountTab(model: HomeModel, openServer: () -> Unit) {
     var appearance by remember { mutableStateOf(false) }
     var upiSheet by remember { mutableStateOf(false) }
     var upi by remember { mutableStateOf("") }
-    androidx.compose.runtime.LaunchedEffect(Unit) { upi = runCatching { Api.myUpi() }.getOrDefault("") }
+    var phoneSheet by remember { mutableStateOf(false) }
+    var phone by remember { mutableStateOf("") }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        upi = runCatching { Api.myUpi() }.getOrDefault("")
+        phone = runCatching { Api.myPhone() }.getOrDefault("")
+    }
     val me = Api.me ?: ""
     val name = model.data?.names?.get(me) ?: "You"
     val email = Api.email
@@ -392,9 +402,9 @@ private fun AccountTab(model: HomeModel, openServer: () -> Unit) {
             Column(Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 var menu by remember { mutableStateOf(false) }
                 val ctx = androidx.compose.ui.platform.LocalContext.current
-                val pick = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia()) { uri ->
-                    uri?.let { u -> encodeGroupImage(ctx, u)?.let { img -> run { Api.setPhoto(img) } } }
-                }
+                var cropUri by remember { mutableStateOf<android.net.Uri?>(null) }
+                val pick = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia()) { uri -> if (uri != null) cropUri = uri }
+                cropUri?.let { u -> CropDialog(u, { cropUri = null }) { img -> cropUri = null; run { Api.setPhoto(img) } } }
                 val choose = { pick.launch(androidx.activity.result.PickVisualMediaRequest(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 Box {
                     Box(Modifier.clip(CircleShape).pressable(role = null) { if (Api.photos.containsKey(me)) menu = true else choose() }) { Avatar(name, me, 92.dp) }
@@ -414,6 +424,7 @@ private fun AccountTab(model: HomeModel, openServer: () -> Unit) {
             Text("Preferences", style = MaterialTheme.typography.titleSmall, color = cs.onSurfaceVariant, modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp))
             SettingsRow(Icons.Rounded.Palette, "Appearance", listOf("Match phone", "Light", "Dark")[Api.themeMode]) { appearance = true }
             SettingsRow(Icons.Rounded.Payments, "UPI ID", upi.ifEmpty { "Add yours so friends can pay you" }, accent = true) { upiSheet = true }
+            SettingsRow(Icons.Rounded.Phone, "Mobile number", phone.ifEmpty { "Add it so friends can pay you by number" }) { phoneSheet = true }
             SettingsRow(Icons.Rounded.Lock, "Change password") { password = true }
             Text("About", style = MaterialTheme.typography.titleSmall, color = cs.onSurfaceVariant, modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp))
             if (BuildConfig.SUPABASE_URL.isBlank()) SettingsRow(Icons.Rounded.Cloud, "Server", Api.serverUrl.removePrefix("https://"), onClick = openServer)
@@ -424,6 +435,7 @@ private fun AccountTab(model: HomeModel, openServer: () -> Unit) {
     }
     if (password) PasswordSheet { password = false }
     if (upiSheet) UpiSheet({ upiSheet = false }, upi) { upi = it }
+    if (phoneSheet) PhoneSheet({ phoneSheet = false }, phone) { phone = it }
     if (appearance) AppSheet({ appearance = false }, "Appearance") {
         Segmented(listOf("Match phone", "Light", "Dark"), Api.themeMode, { Api.setTheme(it) })
         Spacer(Modifier.height(8.dp))
@@ -522,6 +534,22 @@ fun OfflineNote() {
         Icon(Icons.Rounded.CloudOff, null, Modifier.size(20.dp), tint = cs.onSurfaceVariant)
         Spacer(Modifier.width(12.dp))
         Text("Offline. Showing saved data.", style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant, modifier = Modifier.weight(1f)); InfoTip("Changes need a connection. What you see was saved on this phone.")
+    }
+}
+
+@Composable
+private fun PhoneSheet(onDismiss: () -> Unit, current: String, onSaved: (String) -> Unit) {
+    var v by remember { mutableStateOf(current) }
+    var busy by remember { mutableStateOf(false) }
+    var err by remember { mutableStateOf<String?>(null) }
+    val run = rememberRunner({ busy = it }, { err = it })
+    AppSheet(onDismiss, "Mobile number") {
+        Row(verticalAlignment = Alignment.CenterVertically) { Text("Your mobile number", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant); InfoTip("People in your groups can see this number, so they can pay you by number in any UPI app. Leave empty to remove it.") }
+        Spacer(Modifier.height(16.dp))
+        HissaField(v, { v = it.filter(Char::isDigit).take(10); err = null }, "10-digit mobile number", keyboard = androidx.compose.ui.text.input.KeyboardType.Phone)
+        ErrorText(err)
+        Spacer(Modifier.height(24.dp))
+        PrimaryButton("Save", enabled = v.isEmpty() || v.length == 10, loading = busy, onClick = { run { Api.setPhone(v); onSaved(v); onDismiss() } })
     }
 }
 

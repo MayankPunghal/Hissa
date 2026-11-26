@@ -38,7 +38,7 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-@Serializable data class Profile(val id: String, val name: String = "", val email: String? = null, @SerialName("upi_id") val upiId: String? = null, val image: String? = null)
+@Serializable data class Profile(val id: String, val name: String = "", val email: String? = null, @SerialName("upi_id") val upiId: String? = null, val image: String? = null, val phone: String? = null)
 @Serializable data class Group(
     val id: String, val name: String, val currency: String = "INR",
     @SerialName("invite_code") val inviteCode: String = "",
@@ -89,6 +89,8 @@ import kotlinx.serialization.json.put
     val recent: List<Expense>,
     /** UPI ids people saved in their profile, for the "Pay with UPI" button. */
     val upis: Map<String, String> = emptyMap(),
+    /** Mobile numbers people saved in their profile (10 digits), so friends can pay by number. */
+    val phones: Map<String, String> = emptyMap(),
     /** True when this is the copy saved on the phone because the network was unreachable. */
     val offline: Boolean = false,
 )
@@ -220,6 +222,7 @@ object Api {
                 ps.associate { it.id to it.name.ifBlank { "Friend" } },
                 nets, recent.await(),
                 ps.mapNotNull { p -> p.upiId?.takeIf { it.isNotBlank() }?.let { p.id to it } }.toMap(),
+                ps.mapNotNull { p -> p.phone?.takeIf { it.isNotBlank() }?.let { p.id to it } }.toMap(),
             ).also { runCatching { prefs.edit().putString(cacheKey(), json.encodeToString(HomeData.serializer(), it)).apply() } }
         }
     } catch (e: kotlin.coroutines.cancellation.CancellationException) { throw e } catch (e: Exception) {
@@ -360,6 +363,14 @@ object Api {
         if (!demo) sb.from("profiles").update({ set("image", dataUrl) }) { filter { eq("id", id) } }
         if (dataUrl == null) photos.remove(id) else photos[id] = dataUrl
     }
+    suspend fun setPhone(phone: String) {
+        if (demo) return
+        val id = me ?: return
+        sb.from("profiles").update({ set("phone", phone.ifEmpty { null }) }) { filter { eq("id", id) } }
+    }
+    suspend fun myPhone(): String = if (demo) "9876543210" else me?.let { id ->
+        sb.from("profiles").select { filter { eq("id", id) } }.decodeList<Profile>().firstOrNull()?.phone.orEmpty()
+    }.orEmpty()
     suspend fun myUpi(): String = if (demo) "aarav@upi" else me?.let { id ->
         sb.from("profiles").select { filter { eq("id", id) } }.decodeList<Profile>().firstOrNull()?.upiId.orEmpty()
     }.orEmpty()

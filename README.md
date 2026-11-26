@@ -30,7 +30,7 @@ An Android app for sharing expenses in groups, tracking who owes whom, and settl
 - **Simplify group debts** (on by default, per group): A owes B and B owes C becomes A pays C.
 - **Settle up** in one tap, with an optional **UPI** button (friends add their UPI ID in Account).
 - **Insights** per group: category donut, spend per day, by month, by weekday, paid vs share, per person and average, biggest expenses, with a date range filter, and **CSV export**.
-- **Profile photo** in Account, shown next to your name everywhere, and a tinted balance card (you are owed / you owe / all settled up) on Groups, Friends and each group.
+- **Profile photo** in Account (crop it with a drag-and-pinch frame), shown next to your name everywhere, plus an optional **mobile number** friends can copy to pay you in any UPI app, and a tinted balance card (you are owed / you owe / all settled up) on Groups, Friends and each group.
 - **Friends tab** with what you owe each person across all your groups.
 - **Activity feed**, **dark mode**, **offline reading** (the last data is kept on the phone) and **live updates**.
 - **Group settings**: name, picture, members, leave (once settled up) or delete.

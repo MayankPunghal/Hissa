@@ -71,19 +71,6 @@ import java.io.ByteArrayOutputStream
 
 // ───────────────────────────── group picture helpers ─────────────────────────────
 
-/** Centre-crops the picked photo to a 256 px square JPEG and returns it as a data URL (about 15 to 30 KB). */
-fun encodeGroupImage(ctx: Context, uri: Uri): String? = try {
-    val src = ctx.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = 4 }) }
-        ?: ctx.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) }
-    src?.let { b ->
-        val side = minOf(b.width, b.height)
-        val sq = Bitmap.createBitmap(b, (b.width - side) / 2, (b.height - side) / 2, side, side)
-        val out = Bitmap.createScaledBitmap(sq, 256, 256, true)
-        val bytes = ByteArrayOutputStream().also { out.compress(Bitmap.CompressFormat.JPEG, 80, it) }.toByteArray()
-        "data:image/jpeg;base64," + Base64.encodeToString(bytes, Base64.NO_WRAP)
-    }
-} catch (e: Exception) { null }
-
 private val decoded = HashMap<Int, ImageBitmap?>()
 fun decodeGroupImage(dataUrl: String?): ImageBitmap? {
     if (dataUrl.isNullOrBlank()) return null
@@ -155,12 +142,9 @@ fun GroupSettings(g: Group, members: List<String>, net: Map<String, Long>, model
     var addPeople by remember { mutableStateOf(false) }
     var sureDelete by remember { mutableStateOf(false) }
     val run = rememberRunner({ busy = it }, { err = it })
-    val pick = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) {
-            val enc = encodeGroupImage(ctx, uri)
-            if (enc == null) err = "That picture couldn't be read. Try another one." else { image = enc; err = null }
-        }
-    }
+    var cropUri by remember { mutableStateOf<Uri?>(null) }
+    val pick = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> if (uri != null) cropUri = uri }
+    cropUri?.let { u -> CropDialog(u, { cropUri = null }) { enc -> image = enc; err = null; cropUri = null } }
     var rec by remember(g.id) { mutableStateOf<List<RecurringRow>>(emptyList()) }
     androidx.compose.runtime.LaunchedEffect(g.id) { rec = runCatching { Api.recurring(g.id) }.getOrDefault(emptyList()) }
     var plan by remember { mutableStateOf<ImportPlan?>(null) }

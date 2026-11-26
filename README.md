@@ -31,20 +31,14 @@
 
 ## See it work
 
-<table>
-  <tr>
-    <td align="center" width="25%"><b>Tour</b><br><sub>groups, balances, insights</sub></td>
-    <td align="center" width="25%"><b>Add an expense</b><br><sub>five ways to split</sub></td>
-    <td align="center" width="25%"><b>Settle up</b><br><sub>fewest payments</sub></td>
-    <td align="center" width="25%"><b>Dark mode</b><br><sub>follows your phone</sub></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="docs/demo/tour.gif" alt="Hissa tour: opening a group, expenses, balances, spending insights, then the Friends and Activity tabs" width="100%"></td>
-    <td align="center"><img src="docs/demo/add-expense.gif" alt="Adding an expense: amount, description, then switching between equal, exact, percent, shares and item splits" width="100%"></td>
-    <td align="center"><img src="docs/demo/settle-up.gif" alt="Settling up: the simplified balances and recording a payment" width="100%"></td>
-    <td align="center"><img src="docs/demo/dark-mode.gif" alt="Hissa in dark mode: groups, a group's expenses and balances, and the Friends tab" width="100%"></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/demo/tour.gif" alt="Hissa tour: opening a group, expenses, balances, spending insights, then the Friends and Activity tabs" title="Tour" width="200" height="444">
+  <img src="docs/demo/add-expense.gif" alt="Adding an expense: amount, description, then switching between equal, exact, percent, shares and item splits" title="Add an expense" width="200" height="444">
+  <img src="docs/demo/settle-up.gif" alt="Settling up: the simplified balances and recording a payment" title="Settle up" width="200" height="444">
+  <img src="docs/demo/dark-mode.gif" alt="Hissa in dark mode: groups, a group's expenses and balances, and the Friends tab" title="Dark mode" width="200" height="444">
+</p>
+
+<p align="center"><sub>Tour &nbsp;·&nbsp; Add an expense &nbsp;·&nbsp; Settle up &nbsp;·&nbsp; Dark mode</sub></p>
 
 <sub>Recorded on the Android emulator with the built-in demo data, so nothing here is a real person.</sub>
 

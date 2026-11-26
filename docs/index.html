@@ -60,6 +60,9 @@ h2{font-size:clamp(26px,4vw,36px);line-height:1.15;margin:0 0 24px;letter-spacin
 .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}
 .card h3{margin:0 0 6px;font-size:19px}
 .card p{margin:0;color:var(--mute)}
+.demo{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}@media (max-width:760px){.demo{grid-template-columns:repeat(2,1fr)}}
+.demo figure{margin:0;text-align:center}.demo img{display:block;width:100%;height:auto;aspect-ratio:9/20;border-radius:20px;border:1px solid var(--line);background:var(--panel)}
+.demo figcaption{margin-top:12px;color:var(--mute);font-size:15px;line-height:1.4}.demo figcaption b{display:block;color:var(--ink);font-size:17px;margin-bottom:2px}
 table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:18px;overflow:hidden}
 th,td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--line)}
 th{font-weight:600;color:var(--mute)}
@@ -92,11 +95,21 @@ footer{padding:36px 0 56px;border-top:1px solid var(--line);color:var(--mute);fo
   <img class="shot" src="hero.png" width="1600" height="850" alt="Hissa Android app screenshots: groups, expenses, balances and spending insights">
 </div>
 
+<section id="demo">
+  <h2>See it work</h2>
+  <div class="demo">
+    <figure><img src="demo/tour.gif" width="270" height="600" loading="lazy" alt="Hissa tour: opening a group, expenses, balances, spending insights, then the Friends and Activity tabs"><figcaption><b>Tour</b>Groups, expenses, balances and insights, then the Friends and Activity tabs.</figcaption></figure>
+    <figure><img src="demo/add-expense.gif" width="270" height="600" loading="lazy" alt="Adding an expense: amount, description, then switching between equal, exact, percent, shares and item splits"><figcaption><b>Add an expense</b>Type the amount and what it was for, then split it five ways.</figcaption></figure>
+    <figure><img src="demo/settle-up.gif" width="270" height="600" loading="lazy" alt="Settling up: the simplified balances and recording a payment"><figcaption><b>Settle up</b>Debts are simplified to the fewest payments. Tap Settle to record one.</figcaption></figure>
+    <figure><img src="demo/dark-mode.gif" width="270" height="600" loading="lazy" alt="Hissa in dark mode: groups, a group's expenses and balances, and the Friends tab"><figcaption><b>Dark mode</b>Follows your phone's theme, with the same layout.</figcaption></figure>
+  </div>
+</section>
+
 <section>
   <h2>Everything Splitwise Pro charges for, free</h2>
   <div class="grid f4">
     <div class="card"><h3>Split any way</h3><p>Equally, exact amounts, percentages, shares or item by item with tax and tip. Several people can pay.</p></div>
-    <div class="card"><h3>Scan receipts</h3><p>Reads the total and items on your phone. Nothing is uploaded.</p></div>
+    <div class="card"><h3>Receipt photos</h3><p>Attach a photo of the bill to any expense, from the camera or gallery.</p></div>
     <div class="card"><h3>Simplify debts</h3><p>A owes B, B owes C becomes A pays C. Settle in one tap, with UPI.</p></div>
     <div class="card"><h3>Insights and CSV</h3><p>Category charts, spend per day and month, and export to CSV.</p></div>
   </div>

@@ -31,14 +31,16 @@
 
 ## See it work
 
-<p align="center">
-  <img src="docs/demo/tour.gif" alt="Hissa tour: opening a group, expenses, balances, spending insights, then the Friends and Activity tabs" title="Tour" width="200" height="444">
-  <img src="docs/demo/add-expense.gif" alt="Adding an expense: amount, description, then switching between equal, exact, percent, shares and item splits" title="Add an expense" width="200" height="444">
-  <img src="docs/demo/settle-up.gif" alt="Settling up: the simplified balances and recording a payment" title="Settle up" width="200" height="444">
-  <img src="docs/demo/dark-mode.gif" alt="Hissa in dark mode: groups, a group's expenses and balances, and the Friends tab" title="Dark mode" width="200" height="444">
-</p>
-
-<p align="center"><sub>Tour &nbsp;·&nbsp; Add an expense &nbsp;·&nbsp; Settle up &nbsp;·&nbsp; Dark mode</sub></p>
+<table align="center">
+  <tr>
+    <td align="center" valign="top" width="50%"><img src="docs/demo/tour.gif" alt="Hissa tour: opening a group, expenses, balances, spending insights, then the Friends and Activity tabs" width="200" height="444"><br><b>Tour</b><br><sub>Groups, expenses, balances and insights, then the Friends and Activity tabs.</sub></td>
+    <td align="center" valign="top" width="50%"><img src="docs/demo/add-expense.gif" alt="Adding an expense: amount, description, then switching between equal, exact, percent, shares and item splits" width="200" height="444"><br><b>Add an expense</b><br><sub>Type the amount and what it was for, then split it five ways.</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top" width="50%"><img src="docs/demo/settle-up.gif" alt="Settling up: the simplified balances and recording a payment" width="200" height="444"><br><b>Settle up</b><br><sub>Debts are simplified to the fewest payments. Tap Settle to record one.</sub></td>
+    <td align="center" valign="top" width="50%"><img src="docs/demo/dark-mode.gif" alt="Hissa in dark mode: groups, a group's expenses and balances, and the Friends tab" width="200" height="444"><br><b>Dark mode</b><br><sub>Follows your phone's theme, with the same layout.</sub></td>
+  </tr>
+</table>
 
 <sub>Recorded on the Android emulator with the built-in demo data, so nothing here is a real person.</sub>
 

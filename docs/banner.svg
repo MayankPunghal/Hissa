@@ -7,9 +7,8 @@
   <rect width="1200" height="320" rx="28" fill="url(#glow)"/>
   <g transform="translate(90 70) scale(1.7)">
     <rect width="108" height="108" rx="26" fill="#1f1f24"/>
-    <rect x="45" y="47" width="26" height="14" fill="#FFB020"/>
-    <rect x="32" y="30" width="12" height="48" rx="6" fill="#fff"/>
-    <rect x="64" y="30" width="12" height="48" rx="6" fill="#fff"/>
+    <path d="M51,31 A26,26 0 0 0 51,83 Z" fill="#FFB020"/>
+    <path d="M57,25 A26,26 0 0 1 57,77 Z" fill="#fff"/>
   </g>
   <text x="320" y="165" font-family="Manrope, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="96" font-weight="800" fill="#ffffff">Hissa</text>
   <text x="324" y="215" font-family="Manrope, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="30" font-weight="500" fill="#b8b8c0">Split bills with friends. Free, open source, yours to host.</text>

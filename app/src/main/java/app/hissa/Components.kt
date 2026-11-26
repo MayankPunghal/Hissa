@@ -144,13 +144,20 @@ fun AvatarStack(people: List<Pair<String, String>>, size: Dp = 28.dp, max: Int =
 
 /** The headline number: a tinted card, green when owed, red when owing, neutral when settled. */
 @Composable
-fun BalanceHero(cents: Long, currency: String, modifier: Modifier = Modifier) {
+fun BalanceHero(cents: Long, currency: String, modifier: Modifier = Modifier, compact: Boolean = false) {
     val sem = MaterialTheme.semantic
     val cs = MaterialTheme.colorScheme
     val (bg, fg, label) = when {
         cents > 0 -> Triple(sem.owedBg, sem.owed, "You're owed")
         cents < 0 -> Triple(sem.oweBg, sem.owe, "You owe")
         else -> Triple(cs.surfaceContainer, cs.onSurfaceVariant, "All settled up")
+    }
+    if (compact) {
+        Row(modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(bg).padding(horizontal = 18.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(label, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, color = fg)
+            if (cents != 0L) Text(money(cents, currency), style = MaterialTheme.typography.headlineMedium, color = fg)
+        }
+        return
     }
     Column(modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(bg).padding(horizontal = 20.dp, vertical = 16.dp)) {
         Text(label, style = MaterialTheme.typography.labelLarge, color = fg)

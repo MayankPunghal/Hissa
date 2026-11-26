@@ -3,8 +3,7 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- H for Hissa: two people, joined by the shared bill. -->
-    <path android:fillColor="#FFB020" android:pathData="M45,47 H63 A7,7 0 0 1 70,54 V54 A7,7 0 0 1 63,61 H45 A7,7 0 0 1 38,54 V54 A7,7 0 0 1 45,47 Z" />
-    <path android:fillColor="#FFFFFF" android:pathData="M38,30 H38 A6,6 0 0 1 44,36 V72 A6,6 0 0 1 38,78 H38 A6,6 0 0 1 32,72 V36 A6,6 0 0 1 38,30 Z" />
-    <path android:fillColor="#FFFFFF" android:pathData="M70,30 H70 A6,6 0 0 1 76,36 V72 A6,6 0 0 1 70,78 H70 A6,6 0 0 1 64,72 V36 A6,6 0 0 1 70,30 Z" />
+    <!-- A hissa is a share: one coin, split in two. -->
+    <path android:fillColor="#FFB020" android:pathData="M51,31 A26,26 0 0 0 51,83 Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M57,25 A26,26 0 0 1 57,77 Z" />
 </vector>

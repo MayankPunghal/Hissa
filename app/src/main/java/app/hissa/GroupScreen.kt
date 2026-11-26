@@ -165,14 +165,8 @@ fun GroupScreen(g: Group, model: HomeModel, focusExpense: String? = null, onBack
                             }
                             Spacer(Modifier.height(12.dp))
                             // One line of truth about your balance, then the facts as quiet text.
-                            Row {
-                                Text(
-                                    if (net > 0) "You're owed " else if (net < 0) "You owe " else if (spent.isEmpty()) "No expenses yet" else "All settled up",
-                                    style = MaterialTheme.typography.titleLarge,
-                                )
-                                if (net != 0L) Text(money(net, g.currency), style = MaterialTheme.typography.titleLarge, color = if (net > 0) sem.owed else sem.owe)
-                            }
-                            Spacer(Modifier.height(4.dp))
+                            if (spent.isEmpty()) Text("No expenses yet", style = MaterialTheme.typography.titleLarge) else BalanceHero(net, g.currency, compact = true)
+                            Spacer(Modifier.height(10.dp))
                             Text(
                                 (if (spent.isEmpty()) "" else "${money(spent.sumOf { it.amountCents }, g.currency)} spent  ·  ") +
                                     "${d.members.size} ${if (d.members.size == 1) "person" else "people"}",

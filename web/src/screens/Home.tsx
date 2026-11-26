@@ -57,7 +57,7 @@ const Loading = () => <div style={{ height: 240 }}><FullScreenLoading /></div>;
 function GroupsTab({ onJoin }: { onJoin: () => void }) {
   const flip = useFlip(); const d = home.data.value; const failed = home.failed.value;
   return (
-    <TabScroll pad={112} onRefresh={() => refresh()}>
+    <TabScroll pad={88} onRefresh={() => refresh()}>
       <div class="tab-head">
         <h1 class="t-headline-l">Groups</h1>
         <button class="join-pill press" onClick={onJoin}><Icon name="key" size={18} /><span class="t-label-l">Join</span></button>

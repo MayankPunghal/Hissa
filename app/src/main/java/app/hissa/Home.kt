@@ -180,6 +180,7 @@ private fun Tabs(model: HomeModel, tab: Int, setTab: (Int) -> Unit, onOpen: (Gro
             if (tab == 0) GlassFab(haze, "New group") { sheet = "new" }
         },
     ) { pad ->
+        androidx.compose.runtime.CompositionLocalProvider(LocalNavPad provides pad.calculateBottomPadding()) {
         Box(Modifier.padding(top = pad.calculateTopPadding()).fillMaxSize().hazeSource(haze)) {
             androidx.compose.animation.AnimatedContent(
                 tab, label = "tab",
@@ -195,6 +196,7 @@ private fun Tabs(model: HomeModel, tab: Int, setTab: (Int) -> Unit, onOpen: (Gro
                     else -> AccountTab(model, openServer)
                 }
             }
+        }
         }
     }
     when (sheet) {
@@ -212,7 +214,7 @@ private fun GroupsTab(model: HomeModel, onOpen: (Group) -> Unit, onJoin: () -> U
     val d = model.data
     val me = Api.me
     PullToRefreshBox(isRefreshing = model.loading && d != null, onRefresh = { run { model.refresh() } }, modifier = Modifier.fillMaxSize()) {
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 112.dp)) {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 88.dp + LocalNavPad.current)) {
             item {
                 Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
@@ -307,7 +309,7 @@ private fun ActivityTab(model: HomeModel, onOpenExpense: (Group, String) -> Unit
             (d?.groups?.firstOrNull { it.id == e.groupId }?.name ?: "").lowercase().contains(q)
     }
     PullToRefreshBox(isRefreshing = model.loading && d != null, onRefresh = { run { model.refresh() } }, modifier = Modifier.fillMaxSize()) {
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp + LocalNavPad.current)) {
             item {
                 Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("Activity", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.weight(1f))
@@ -403,7 +405,7 @@ private fun AccountTab(model: HomeModel, openServer: () -> Unit) {
     val me = Api.me ?: ""
     val name = model.data?.names?.get(me) ?: "You"
     val email = Api.email
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp + LocalNavPad.current)) {
         item {
             Column(Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 var menu by remember { mutableStateOf(false) }

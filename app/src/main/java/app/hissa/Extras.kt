@@ -110,7 +110,7 @@ fun FriendsTab(model: HomeModel) {
     val snack = LocalSnack.current
     val runSettle = rememberRunner({ busy = it }, { err = it })
     PullToRefreshBox(isRefreshing = model.loading && d != null, onRefresh = { run { model.refresh() } }, modifier = Modifier.fillMaxSize()) {
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp + LocalNavPad.current)) {
             item {
                 Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 12.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("Friends", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.weight(1f))

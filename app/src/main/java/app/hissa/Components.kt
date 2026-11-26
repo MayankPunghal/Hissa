@@ -356,5 +356,8 @@ fun GlassFab(haze: dev.chrisbanes.haze.HazeState, text: String, onClick: () -> U
 }
 
 private fun Modifier.dev_hazeGlass(haze: dev.chrisbanes.haze.HazeState, tint: androidx.compose.ui.graphics.Color) = this.hazeEffect(
-    haze, dev.chrisbanes.haze.HazeStyle(backgroundColor = tint, tints = listOf(dev.chrisbanes.haze.HazeTint(tint.copy(alpha = 0.6f))), blurRadius = 20.dp, noiseFactor = 0.04f),
+    haze, dev.chrisbanes.haze.HazeStyle(backgroundColor = androidx.compose.ui.graphics.Color.Transparent, tints = listOf(dev.chrisbanes.haze.HazeTint(tint.copy(alpha = 0.7f))), blurRadius = 20.dp, noiseFactor = 0.04f),
 )
+
+/** Height of the frosted bottom bar, so scrolling tabs can end above it instead of under it. */
+val LocalNavPad = androidx.compose.runtime.compositionLocalOf { 0.dp }

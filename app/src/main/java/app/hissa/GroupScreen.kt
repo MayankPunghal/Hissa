@@ -260,8 +260,8 @@ fun GroupScreen(g: Group, model: HomeModel, focusExpense: String? = null, onBack
                                 Spacer(Modifier.width(14.dp))
                                 Text(n(m), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                                 when {
-                                    v > 0 -> Text("gets back ${money(v, g.currency)}", style = MaterialTheme.typography.titleSmall, color = sem.owed)
-                                    v < 0 -> Text("owes ${money(v, g.currency)}", style = MaterialTheme.typography.titleSmall, color = sem.owe)
+                                    v > 0 -> Text("${if (m == me) "get" else "gets"} back ${money(v, g.currency)}", style = MaterialTheme.typography.titleSmall, color = sem.owed)
+                                    v < 0 -> Text("${if (m == me) "owe" else "owes"} ${money(v, g.currency)}", style = MaterialTheme.typography.titleSmall, color = sem.owe)
                                     else -> Text("settled", style = MaterialTheme.typography.titleSmall, color = cs.onSurfaceVariant)
                                 }
                             }

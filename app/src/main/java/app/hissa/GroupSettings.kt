@@ -202,8 +202,8 @@ fun GroupSettings(g: Group, members: List<String>, net: Map<String, Long>, model
                         if (m == g.createdBy) Text("Group creator", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
                     }
                     when {
-                        v > 0 -> Column(horizontalAlignment = Alignment.End) { Text("gets back", style = MaterialTheme.typography.labelSmall, color = sem.owed); Text(money(v, g.currency), style = MaterialTheme.typography.titleSmall, color = sem.owed) }
-                        v < 0 -> Column(horizontalAlignment = Alignment.End) { Text("owes", style = MaterialTheme.typography.labelSmall, color = sem.owe); Text(money(v, g.currency), style = MaterialTheme.typography.titleSmall, color = sem.owe) }
+                        v > 0 -> Column(horizontalAlignment = Alignment.End) { Text(if (m == me) "get back" else "gets back", style = MaterialTheme.typography.labelSmall, color = sem.owed); Text(money(v, g.currency), style = MaterialTheme.typography.titleSmall, color = sem.owed) }
+                        v < 0 -> Column(horizontalAlignment = Alignment.End) { Text(if (m == me) "owe" else "owes", style = MaterialTheme.typography.labelSmall, color = sem.owe); Text(money(v, g.currency), style = MaterialTheme.typography.titleSmall, color = sem.owe) }
                         else -> Text("settled up", style = MaterialTheme.typography.labelLarge, color = cs.onSurfaceVariant)
                     }
                 }

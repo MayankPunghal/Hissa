@@ -5,6 +5,11 @@ package app.hissa
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.togetherWith
+import androidx.compose.material3.HorizontalDivider
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -144,12 +149,14 @@ private fun Tabs(model: HomeModel, tab: Int, setTab: (Int) -> Unit, onOpen: (Gro
     var sheet by remember { mutableStateOf("") } // "", "new", "join"
     // A tapped invite link opens the join sheet with its code filled in.
     LaunchedEffect(Api.pendingInvite) { if (Api.pendingInvite != null) sheet = "join" }
+    val haze = remember { dev.chrisbanes.haze.HazeState() }
     Scaffold(
         containerColor = cs.background,
         bottomBar = {
-            Column {
-                Divider()
-                NavigationBar(containerColor = cs.background, tonalElevation = 0.dp) {
+            // Frosted glass: the lists scroll underneath and are blurred through the bar (Android 12+; older phones get a solid tint).
+            Column(Modifier.hazeChild(haze, HazeStyle(tint = dev.chrisbanes.haze.HazeTint(cs.background.copy(alpha = 0.9f)), blurRadius = 28.dp))) {
+                HorizontalDivider(color = cs.outlineVariant.copy(alpha = 0.5f))
+                NavigationBar(containerColor = Color.Transparent, tonalElevation = 0.dp) {
                     listOf(
                         Triple("Groups", Icons.Rounded.Groups, 0),
                         Triple("Friends", Icons.Rounded.Person, 1),
@@ -180,8 +187,14 @@ private fun Tabs(model: HomeModel, tab: Int, setTab: (Int) -> Unit, onOpen: (Gro
             }
         },
     ) { pad ->
-        Box(Modifier.padding(pad).fillMaxSize()) {
-            Crossfade(tab, animationSpec = tween(180), label = "tab") { t ->
+        Box(Modifier.padding(top = pad.calculateTopPadding()).fillMaxSize().haze(haze)) {
+            androidx.compose.animation.AnimatedContent(
+                tab, label = "tab",
+                transitionSpec = {
+                    (androidx.compose.animation.fadeIn(tween(240, 60)) + androidx.compose.animation.slideInVertically(tween(280)) { it / 30 })
+                        .togetherWith(androidx.compose.animation.fadeOut(tween(120)))
+                },
+            ) { t ->
                 when (t) {
                     0 -> GroupsTab(model, onOpen) { sheet = "join" }
                     1 -> FriendsTab(model)

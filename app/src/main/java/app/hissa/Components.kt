@@ -3,6 +3,11 @@
 package app.hissa
 
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.draw.shadow
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.PlainTooltip
@@ -152,16 +157,23 @@ fun BalanceHero(cents: Long, currency: String, modifier: Modifier = Modifier, co
         cents < 0 -> Triple(sem.oweBg, sem.owe, "You owe")
         else -> Triple(cs.surfaceContainer, cs.onSurfaceVariant, "All settled up")
     }
+    // The amount counts up from zero when the card appears and eases to the new value when it changes.
+    val anim = remember { androidx.compose.animation.core.Animatable(0f) }
+    LaunchedEffect(cents) { anim.animateTo(cents.toFloat(), tween(650, easing = androidx.compose.animation.core.FastOutSlowInEasing)) }
+    val shown = anim.value.toLong()
+    val edge = androidx.compose.foundation.BorderStroke(1.dp, fg.copy(alpha = 0.16f))
     if (compact) {
-        Row(modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(bg).padding(horizontal = 18.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+        val shape = RoundedCornerShape(18.dp)
+        Row(modifier.fillMaxWidth().clip(shape).background(bg).border(edge, shape).padding(horizontal = 18.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(label, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, color = fg)
-            if (cents != 0L) Text(money(cents, currency), style = MaterialTheme.typography.headlineMedium, color = fg)
+            if (cents != 0L) Text(money(shown, currency), style = MaterialTheme.typography.headlineMedium, color = fg)
         }
         return
     }
-    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(bg).padding(horizontal = 20.dp, vertical = 16.dp)) {
+    val shape = RoundedCornerShape(24.dp)
+    Column(modifier.fillMaxWidth().clip(shape).background(bg).border(edge, shape).padding(horizontal = 20.dp, vertical = 16.dp)) {
         Text(label, style = MaterialTheme.typography.labelLarge, color = fg)
-        if (cents != 0L) Text(money(cents, currency), style = MaterialTheme.typography.displaySmall, color = fg)
+        if (cents != 0L) Text(money(shown, currency), style = MaterialTheme.typography.displaySmall, color = fg)
     }
 }
 
@@ -215,19 +227,17 @@ fun HissaField(
 @Composable
 fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit, modifier: Modifier = Modifier) {
     val cs = MaterialTheme.colorScheme
-    Row(modifier.fillMaxWidth().clip(CircleShape).background(cs.surfaceContainer).padding(4.dp)) {
-        options.forEachIndexed { i, label ->
-            val on = i == selected
-            Box(
-                Modifier.weight(1f).height(40.dp).clip(CircleShape)
-                    .background(if (on) cs.surface else Color.Transparent)
-                    .pressable(role = Role.Tab) { onSelect(i) },
-                Alignment.Center,
-            ) {
-                Text(
-                    label, style = MaterialTheme.typography.labelLarge,
-                    color = if (on) cs.onSurface else cs.onSurfaceVariant, maxLines = 1,
-                )
+    BoxWithConstraints(modifier.fillMaxWidth().clip(CircleShape).background(cs.surfaceContainer).padding(4.dp)) {
+        val w = maxWidth / options.size
+        // One pill that slides between options instead of each option fading in and out.
+        val x by androidx.compose.animation.core.animateDpAsState(w * selected, spring(dampingRatio = 0.8f, stiffness = 500f), label = "pill")
+        Box(Modifier.offset(x = x).width(w).height(40.dp).shadow(1.dp, CircleShape).clip(CircleShape).background(cs.surface).border(1.dp, cs.outlineVariant.copy(alpha = 0.6f), CircleShape))
+        Row {
+            options.forEachIndexed { i, label ->
+                val on = i == selected
+                Box(Modifier.width(w).height(40.dp).clip(CircleShape).pressable(role = Role.Tab) { onSelect(i) }, Alignment.Center) {
+                    Text(label, style = MaterialTheme.typography.labelLarge, color = if (on) cs.onSurface else cs.onSurfaceVariant, maxLines = 1)
+                }
             }
         }
     }

@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.Image
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -176,50 +178,6 @@ private fun itemsSplit(total: Long, items: List<ItemRow>): Result<Map<String, Lo
     weightedSplit(total, sub)
 }
 
-// ───────────────────────────── receipt reading ─────────────────────────────
-
-private class Receipt(val total: Long?, val title: String?, val items: List<Pair<String, Long>>)
-
-private val amountAtEnd = Regex("""(\d{1,3}(?:,\d{2,3})*|\d+)\.(\d{2})\s*[A-Za-z]?\s*$""")
-private val skipLine = Regex("""(?i)sub\s*-?total|total|tax|gst|cgst|sgst|igst|vat|service|round|change|cash|card|paid|tip|discount|balance|invoice|bill no|phone|tel|date|time|table""")
-
-/** Pulls the total, a title and item lines out of recognised receipt text. Best effort: the user checks it. */
-private fun parseReceipt(text: String): Receipt {
-    val lines = text.lines().map { it.trim() }.filter { it.isNotEmpty() }
-    fun cents(m: MatchResult) = (m.groupValues[1].replace(",", "") + m.groupValues[2]).toLongOrNull()
-    val totalLine = lines.lastOrNull { Regex("(?i)(grand\\s*)?total|amount\\s*due|net\\s*(amount|payable)|to\\s*pay").containsMatchIn(it) && !Regex("(?i)sub\\s*-?total").containsMatchIn(it) && amountAtEnd.containsMatchIn(it) }
-    val total = totalLine?.let { amountAtEnd.find(it)?.let(::cents) }
-        ?: lines.mapNotNull { amountAtEnd.find(it)?.let(::cents) }.maxOrNull()
-    val title = lines.firstOrNull { l -> l.count { it.isLetter() } >= 3 && !amountAtEnd.containsMatchIn(l) && !skipLine.containsMatchIn(l) }
-    val items = lines.mapNotNull { l ->
-        if (skipLine.containsMatchIn(l)) return@mapNotNull null
-        val m = amountAtEnd.find(l) ?: return@mapNotNull null
-        val name = l.substring(0, m.range.first).replace(Regex("""^\d+\s*[xX]?\s*"""), "").trim(' ', '-', '.', ':')
-        val c = cents(m)
-        if (c == null || c <= 0 || name.count { it.isLetter() } < 2) null else name.take(60) to c
-    }
-    return Receipt(total, title, items)
-}
-
-private suspend fun recognise(ctx: android.content.Context, uri: Uri): String = kotlin.coroutines.suspendCoroutine { cont ->
-    try {
-        val img = com.google.mlkit.vision.common.InputImage.fromFilePath(ctx, uri)
-        com.google.mlkit.vision.text.TextRecognition.getClient(com.google.mlkit.vision.text.latin.TextRecognizerOptions.DEFAULT_OPTIONS)
-            .process(img)
-            .addOnSuccessListener { t ->
-                // The recogniser may put item names and prices in different blocks; join pieces that sit on the same row.
-                val pieces = t.textBlocks.flatMap { it.lines }.mapNotNull { l -> l.boundingBox?.let { Triple(l.text, it.centerY(), it) } }
-                val rows = ArrayList<MutableList<Triple<String, Int, android.graphics.Rect>>>()
-                pieces.sortedBy { it.second }.forEach { p ->
-                    val row = rows.lastOrNull()?.takeIf { r -> kotlin.math.abs(r.first().second - p.second) < p.third.height() * 0.6 }
-                    if (row != null) row.add(p) else rows.add(mutableListOf(p))
-                }
-                cont.resumeWith(Result.success(rows.joinToString("\n") { r -> r.sortedBy { it.third.left }.joinToString("  ") { it.first } }.ifBlank { t.text }))
-            }
-            .addOnFailureListener { cont.resumeWith(Result.failure(it)) }
-    } catch (e: Exception) { cont.resumeWith(Result.failure(e)) }
-}
-
 // ───────────────────────────── the screen ─────────────────────────────
 
 /**
@@ -251,8 +209,11 @@ fun AddExpenseScreen(
     var repeat by remember { mutableStateOf(0) } // 0 never, 1 weekly, 2 monthly
     var keepSplit by remember { mutableStateOf(false) }
     var saving by remember { mutableStateOf(false) }
-    var scanning by remember { mutableStateOf(false) }
-    var scanMenu by remember { mutableStateOf(false) }
+    var photo by remember { mutableStateOf<String?>(null) }
+    var photoChanged by remember { mutableStateOf(false) }
+    var photoBusy by remember { mutableStateOf(false) }
+    var viewPhoto by remember { mutableStateOf(false) }
+    var photoMenu by remember { mutableStateOf(false) }
     val items = remember { mutableStateListOf<ItemRow>() }
     var itemsMode by remember { mutableStateOf(false) }
 
@@ -286,28 +247,19 @@ fun AddExpenseScreen(
     val ownRes: Result<Map<String, Long>>? = cents?.let { if (itemsMode) itemsSplit(it, items) else owes.result(it, members) }
     val payRes: Result<Map<String, Long>>? = cents?.let { if (multi) paid.result(it, members) else Result.success(mapOf(payer to it)) }
 
-    fun scan(uri: Uri) {
-        scanning = true
+    fun attach(uri: Uri) {
+        photoBusy = true
         scope.launch {
-            try {
-                val raw = recognise(ctx, uri)
-                val r = parseReceipt(raw)
-                if (r.total == null && r.items.isEmpty()) snack.say("Couldn't read that receipt. Try a clearer, flatter photo.")
-                else {
-                    r.total?.let { amount = "%.2f".format(it / 100.0) }
-                    r.title?.let { if (desc.isBlank()) { desc = it.take(60); if (!catPicked) category = guessCategory(desc) ?: Cat.GENERAL } }
-                    if (r.items.size >= 2) {
-                        items.clear(); r.items.forEach { (n, c) -> items.add(ItemRow(n, "%.2f".format(c / 100.0), members.toSet())) }
-                        itemsMode = true
-                    }
-                    snack.say("Receipt read. Please check the details.")
-                }
-            } catch (e: Exception) { snack.say("Couldn't read that receipt.") } finally { scanning = false; focusManager.clearFocus() }
+            val enc = encodePhoto(ctx, uri)
+            if (enc == null) snack.say("Couldn't use that photo.") else { photo = enc; photoChanged = true }
+            photoBusy = false
         }
     }
-    val pick = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { it?.let(::scan) }
+    val pick = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { it?.let(::attach) }
     var camUri by remember { mutableStateOf<Uri?>(null) }
-    val cam = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok -> if (ok) camUri?.let(::scan) }
+    val cam = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok -> if (ok) camUri?.let(::attach) }
+    // Editing: show the photo already saved with this expense.
+    LaunchedEffect(initial?.id) { if (initial != null) runCatching { Api.expensePhoto(initial.id) }.getOrNull()?.let { if (!photoChanged) photo = it } }
 
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { if (!editing) runCatching { focus.requestFocus() } }
@@ -331,12 +283,12 @@ fun AddExpenseScreen(
             IconButton(onClose) { Icon(Icons.Rounded.Close, contentDescription = "Close") }
             Text(if (editing) "Edit expense" else "New expense", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
             Box {
-                IconButton({ scanMenu = true }, enabled = !scanning) { Icon(Icons.Rounded.AddAPhoto, contentDescription = "Scan a receipt") }
-                DropdownMenu(scanMenu, { scanMenu = false }) {
+                IconButton({ photoMenu = true }, enabled = !photoBusy) { Icon(Icons.Rounded.AddAPhoto, contentDescription = "Add a photo") }
+                DropdownMenu(photoMenu, { photoMenu = false }) {
                     DropdownMenuItem(
                         { Text("Take a photo") }, leadingIcon = { Icon(Icons.Rounded.AddAPhoto, null) },
                         onClick = {
-                            scanMenu = false
+                            photoMenu = false
                             val f = java.io.File(ctx.cacheDir, "receipts").apply { mkdirs() }.let { java.io.File.createTempFile("receipt", ".jpg", it) }
                             val u = androidx.core.content.FileProvider.getUriForFile(ctx, ctx.packageName + ".files", f)
                             camUri = u; cam.launch(u)
@@ -344,7 +296,7 @@ fun AddExpenseScreen(
                     )
                     DropdownMenuItem(
                         { Text("Choose a photo") }, leadingIcon = { Icon(Icons.Rounded.PhotoLibrary, null) },
-                        onClick = { scanMenu = false; pick.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                        onClick = { photoMenu = false; pick.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                     )
                 }
             }
@@ -365,7 +317,6 @@ fun AddExpenseScreen(
                     },
                 )
             }
-            if (scanning) Text("Reading receipt…", Modifier.fillMaxWidth().padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant, textAlign = TextAlign.Center)
             Spacer(Modifier.height(20.dp))
             HissaField(desc, {
                 desc = it.take(200)
@@ -401,6 +352,23 @@ fun AddExpenseScreen(
                 }
             }
             if (showNotes) { Spacer(Modifier.height(12.dp)); HissaField(notes, { notes = it.take(500) }, "Note", singleLine = false) }
+            if (photo != null || photoBusy) {
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(cs.surfaceContainer).padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    val bmp = decodeGroupImage(photo)
+                    if (bmp != null) Image(bmp, contentDescription = "Attached photo", contentScale = androidx.compose.ui.layout.ContentScale.Crop, modifier = Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).pressable(role = null) { viewPhoto = true })
+                    else Box(Modifier.size(56.dp), Alignment.Center) { CircularProgressIndicator(Modifier.size(24.dp), color = cs.primary, strokeWidth = 2.5.dp) }
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(if (photoBusy) "Adding photo…" else "Photo attached", style = MaterialTheme.typography.titleSmall)
+                        if (!photoBusy) Text("Tap to view", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
+                    }
+                    IconButton({ photo = null; photoChanged = true }, enabled = !photoBusy) { Icon(Icons.Rounded.Close, contentDescription = "Remove photo") }
+                }
+            }
 
             Spacer(Modifier.height(24.dp))
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -465,7 +433,7 @@ fun AddExpenseScreen(
             PrimaryButton(
                 if (editing) "Save changes" else "Save expense", loading = saving, enabled = ready,
                 onClick = {
-                    val x = Api.ExpenseInput(desc.trim(), cents!!, payRes!!.getOrThrow(), ownRes!!.getOrThrow(), date, category.id.ifEmpty { null }, notes.trim().ifEmpty { null })
+                    val x = Api.ExpenseInput(desc.trim(), cents!!, payRes!!.getOrThrow(), ownRes!!.getOrThrow(), date, category.id.ifEmpty { null }, notes.trim().ifEmpty { null }, photo, photoChanged)
                     if (!editing && !itemsMode) Api.setSplitDefault(g.id, if (keepSplit) owes.mode.name + "|" + owes.picked(members).joinToString(",") + "|" + owes.vals.entries.joinToString(",") { it.key + ":" + it.value } else null)
                     run { onSave(x, listOf(null, "week", "month")[repeat]) }
                 },
@@ -473,6 +441,7 @@ fun AddExpenseScreen(
         }
     }
 
+    if (viewPhoto) photo?.let { PhotoViewer(it) { viewPhoto = false } }
     if (showCats) CategorySheet(category, { category = it; catPicked = true; showCats = false }, { showCats = false })
 
     if (showDate) {

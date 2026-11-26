@@ -13,3 +13,7 @@ keystore/
 .claude/
 .impeccable/review/
 .impeccable/*.ps1
+
+web/node_modules/
+web/dist/
+web/.env*

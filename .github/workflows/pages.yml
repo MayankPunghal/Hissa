@@ -1,0 +1,51 @@
+name: Pages
+# Publishes the website (docs/) and the web app (web/, served at /app/) to GitHub Pages.
+# The web app is built here so it can take SUPABASE_URL and SUPABASE_ANON_KEY from the repository secrets,
+# the same ones the Android release uses. One-time setup: Settings -> Pages -> Source = "GitHub Actions".
+on:
+  push:
+    branches: [main]
+    paths: ["docs/**", "web/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: web/package-lock.json }
+      - name: Build the web app
+        working-directory: web
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          # Same version number the Android app shows (the latest release tag, e.g. v0.4.5 -> 0.4.5).
+          export VITE_APP_VERSION=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null | sed 's/^v//')
+          npm ci
+          npm run build
+      - name: Assemble the site
+        run: |
+          mkdir _site
+          cp -r docs/. _site/
+          mkdir _site/app
+          cp -r web/dist/. _site/app/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: _site }
+      - id: deployment
+        uses: actions/deploy-pages@v4

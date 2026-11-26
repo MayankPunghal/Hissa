@@ -34,8 +34,10 @@
   <p>Open Hissa to join and start splitting bills.</p>
   <div class="code" id="code"></div>
   <a class="btn primary" id="open" href="#">Open in Hissa</a>
+  <a class="btn ghost" id="web" href="../app/">Use the web app</a>
   <button class="btn ghost" id="copy" type="button">Copy invite code</button>
-  <small>Already have Hissa? Tap Open in Hissa and you will join the group. New here? <a id="get" href="#" hidden>Get the app</a>, then come back to this link.</small>
+  <small id="note">Already have Hissa? Tap Open in Hissa and you will join the group. New here? <a id="get" href="#" hidden>Get the app</a>, then come back to this link.</small>
+  <small id="webnote" hidden>No Android? Use the web app: it works in any browser, and on iPhone you can add it to your Home Screen (Share, then Add to Home Screen).</small>
 </main>
 <script>
   // Works for  .../join/?code=CODE  and  .../join/CODE  (the second needs a 404 page that forwards here).
@@ -49,6 +51,12 @@
   var isAndroid = /Android/i.test(navigator.userAgent);
   var openHref = isAndroid ? "intent://join/" + encodeURIComponent(code) + "#Intent;scheme=hissa;package=app.hissa;end" : link;
   el("open").href = openHref;
+  // The web app (docs/app) opens the same invite. iPhone and desktop have no Android app, so it becomes the main button there.
+  el("web").href = "../app/#/join/" + encodeURIComponent(code);
+  if (!isAndroid) {
+    el("open").href = el("web").href; el("open").textContent = "Open in the web app";
+    el("web").hidden = true; el("note").hidden = true; el("webnote").hidden = false;
+  }
   el("copy").onclick = function () {
     var done = function () { el("copy").textContent = "Copied"; };
     if (navigator.clipboard) navigator.clipboard.writeText(code).then(done); else { var r = document.createRange(); r.selectNodeContents(el("code")); getSelection().addRange(r); document.execCommand("copy"); done(); }

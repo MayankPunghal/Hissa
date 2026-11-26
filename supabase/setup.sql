@@ -470,3 +470,47 @@ returns uuid language sql security definer set search_path = '' as $$
     jsonb_build_array(jsonb_build_object('user_id', p_paid_by, 'paid_cents', p_amount_cents)),
     p_splits, p_expense_date, p_is_settlement);
 $$;
+
+-- ───────────── photos on expenses (order screenshot, receipt) ─────────────
+-- Own table, so expense lists stay light: the photo is fetched only when an expense is opened.
+create table if not exists public.expense_photos (
+  expense_id uuid primary key references public.expenses(id) on delete cascade,
+  image text not null check (length(image) < 600000)
+);
+alter table public.expense_photos enable row level security;
+drop policy if exists photos_read on public.expense_photos;
+create policy photos_read on public.expense_photos for select to authenticated
+  using (exists (select 1 from public.expenses e where e.id = expense_id and public.is_member(e.group_id)));
+
+-- p_image: a small JPEG as a base64 data URL; null or '' removes the photo
+create or replace function public.set_expense_photo(p_expense_id uuid, p_image text) returns void
+language plpgsql security definer set search_path = '' as $$
+declare gid uuid;
+begin
+  select group_id into gid from public.expenses where id = p_expense_id;
+  if gid is null or not public.is_member(gid) then raise exception 'not a group member'; end if;
+  if coalesce(p_image, '') = '' then
+    delete from public.expense_photos where expense_id = p_expense_id;
+  else
+    insert into public.expense_photos (expense_id, image) values (p_expense_id, p_image)
+    on conflict (expense_id) do update set image = excluded.image;
+  end if;
+end $$;
+revoke execute on function public.set_expense_photo(uuid, text) from public, anon;
+grant execute on function public.set_expense_photo(uuid, text) to authenticated;
+
+-- editing replaces the expense, so carry its photo over to the new row
+create or replace function public.edit_expense(
+  p_expense_id uuid, p_description text, p_amount_cents bigint, p_payers jsonb, p_splits jsonb,
+  p_expense_date date, p_category text default null, p_notes text default null)
+returns uuid language plpgsql security definer set search_path = '' as $$
+declare gid uuid; img text; eid uuid;
+begin
+  select group_id into gid from public.expenses where id = p_expense_id and not is_settlement;
+  if gid is null or not public.is_member(gid) then raise exception 'not a group member'; end if;
+  select image into img from public.expense_photos where expense_id = p_expense_id;
+  delete from public.expenses where id = p_expense_id;
+  eid := public.add_expense2(gid, p_description, p_amount_cents, p_payers, p_splits, p_expense_date, false, p_category, p_notes);
+  if img is not null then insert into public.expense_photos (expense_id, image) values (eid, img); end if;
+  return eid;
+end $$;

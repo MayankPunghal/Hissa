@@ -1,0 +1,100 @@
+/* Primitive styles. Numbers are the dp values from Components.kt / Material3 defaults. */
+@keyframes enter { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes dash { 0% { stroke-dasharray: 2 140; stroke-dashoffset: 0; } 50% { stroke-dasharray: 90 140; stroke-dashoffset: -30; } 100% { stroke-dasharray: 90 140; stroke-dashoffset: -140; } }
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes sheet-up { from { transform: translateY(100%); } }
+@keyframes pop { from { opacity: 0; transform: scale(.92); } }
+@media (prefers-reduced-motion: reduce) { * { animation-duration: .001ms !important; animation-delay: 0ms !important; transition-duration: .001ms !important; } }
+
+.spinner { animation: spin 1.4s linear infinite; display: block; }
+.spinner circle { animation: dash 1.4s ease-in-out infinite; }
+.center-fill { display: grid; place-items: center; height: 100%; min-height: 240px; }
+
+.error-text { color: var(--error); padding-top: 12px; }
+
+/* snackbar */
+.snack-host { position: fixed; left: 0; right: 0; bottom: calc(84px + var(--safe-bottom)); display: flex; justify-content: center; pointer-events: none; z-index: 100; padding: 0 12px; }
+.snack { background: var(--inverse-surface); color: var(--inverse-on-surface); border-radius: 8px; padding: 14px 16px; min-height: 48px; max-width: 600px; font-weight: 500; font-size: 14px; line-height: 20px; box-shadow: 0 3px 5px -1px rgba(0,0,0,.2), 0 6px 10px 0 rgba(0,0,0,.14), 0 1px 18px 0 rgba(0,0,0,.12); animation: snack-in 150ms cubic-bezier(0,0,.2,1) both; pointer-events: auto; }
+@keyframes snack-in { from { opacity: 0; transform: scale(.8); } }
+
+/* avatars */
+.avatar { border-radius: 50%; object-fit: cover; display: grid; place-items: center; color: #fff; font-weight: 700; flex: none; line-height: 1; overflow: hidden; user-select: none; }
+.avatar-stack { display: flex; align-items: center; }
+.sel-avatar { width: 64px; display: flex; flex-direction: column; align-items: center; gap: 4px; flex: none; }
+.sel-ring { width: 56px; height: 56px; border-radius: 50%; border-style: solid; display: grid; place-items: center; }
+
+/* balance hero */
+.hero { width: 100%; border-radius: 24px; padding: 16px 20px; }
+.hero-compact { width: 100%; border-radius: 18px; padding: 14px 18px; display: flex; align-items: center; }
+
+/* buttons */
+.btn { width: 100%; height: 52px; border-radius: 14px; display: grid; place-items: center; }
+.btn-primary { background: var(--inverse-surface); color: var(--inverse-on-surface); }
+.btn-disabled { background: var(--surface-high); color: var(--on-surface-variant); cursor: default; }
+.btn-secondary { background: var(--surface-high); }
+.btn-danger { background: var(--error-container); }
+.text-btn { height: 40px; padding: 0 12px; border-radius: 20px; }
+.icon-btn { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+@media (hover: hover) { .icon-btn:hover { background: color-mix(in srgb, var(--on-surface) 8%, transparent); } }
+.icon-btn:active { background: color-mix(in srgb, var(--on-surface) 12%, transparent); }
+.fab { height: 56px; padding: 0 20px 0 16px; border-radius: 28px; background: var(--primary); color: var(--on-primary); display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.22), 0 1px 2px rgba(0,0,0,.18); }
+button:focus-visible, a:focus-visible, .seg-opt:focus-visible { outline: 2px solid var(--on-surface); outline-offset: 2px; }
+
+/* outlined text field (OutlinedTextField, 16dp corners, 56dp tall) */
+.field { --fbg: var(--surface-low); margin-top: 8px; position: relative; display: flex; align-items: center; min-height: 56px; border-radius: 16px; background: var(--fbg); border: 1px solid var(--outline-variant); padding: 0 16px; cursor: text; transition: border-color .15s, box-shadow .15s; }
+.field.focus { --fbg: var(--surface); border-color: var(--on-surface); box-shadow: inset 0 0 0 1px var(--on-surface); }
+.field.err { border-color: var(--error); }
+.field.err.focus { border-color: var(--error); box-shadow: inset 0 0 0 1px var(--error); }
+.field-input { flex: 1; min-width: 0; width: 100%; background: transparent; border: 0; outline: 0; padding: 15px 0; resize: none; caret-color: var(--primary); }
+textarea.field-input { padding: 15px 0; }
+.field-label { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); padding: 0 4px; color: var(--on-surface-variant); font-weight: 500; font-size: 16px; line-height: 16px; pointer-events: none; transition: top .15s cubic-bezier(.4,0,.2,1), font-size .15s cubic-bezier(.4,0,.2,1); background: transparent; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.field.has-lead .field-label { left: 52px; }
+.field.floated .field-label { top: -1px; font-size: 12px; background: var(--fbg); }
+.field.err .field-label { color: var(--error); }
+.field-lead { margin-right: 12px; display: flex; color: var(--on-surface-variant); }
+.field-trail { margin-right: -16px; display: flex; color: var(--on-surface-variant); }
+.field-support { color: var(--error); padding: 4px 16px 0; }
+
+/* segmented control: one pill slides between options */
+.seg { position: relative; display: flex; width: 100%; padding: 4px; border-radius: 999px; background: var(--surface-container); }
+.seg-pill { position: absolute; top: 4px; left: 4px; height: 40px; border-radius: 999px; background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.14); border: 1px solid color-mix(in srgb, var(--outline-variant) 60%, transparent); transition: transform 400ms var(--spring-pill); }
+.seg-opt { position: relative; height: 40px; border-radius: 999px; white-space: nowrap; }
+
+.section-title { padding: 20px 20px 8px; }
+.divider { width: 100%; height: 1px; background: var(--outline-variant); }
+.pill { display: inline-block; border-radius: 999px; padding: 4px 10px; }
+.empty { display: flex; flex-direction: column; align-items: center; padding: 40px 32px; }
+.infotip { position: relative; display: inline-flex; }
+.tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 4px; width: max-content; max-width: min(260px, 88vw); background: var(--inverse-surface); color: var(--inverse-on-surface); padding: 4px 8px; border-radius: 8px; z-index: 50; }
+
+/* bottom sheet */
+.sheet-root { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; }
+.scrim { position: absolute; inset: 0; background: var(--scrim); animation: fade-in .2s; }
+.sheet { position: relative; width: 100%; max-width: 640px; max-height: 92vh; overflow-y: auto; background: var(--surface); border-radius: 28px 28px 0 0; animation: sheet-up .28s cubic-bezier(.2,0,0,1); padding-bottom: var(--safe-bottom); }
+.sheet-handle { width: 32px; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--on-surface-variant) 40%, transparent); margin: 22px auto; }
+.sheet-grab { touch-action: none; cursor: grab; }
+.sheet-title { padding: 0 24px; }
+.sheet-body { padding: 0 24px 20px; }
+.sheet-root.closing .sheet { animation: none; transform: translateY(100%); transition: transform .18s ease-in; }
+.sheet-root.closing .scrim { opacity: 0; transition: opacity .18s; }
+
+.dialog-root { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 0 48px; }
+.dialog { position: relative; background: var(--surface-high); border-radius: 28px; padding: 24px; width: max-content; min-width: 280px; max-width: min(560px, 100%); animation: pop .18s ease-out; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+
+.ptr { overflow: hidden; display: flex; justify-content: center; align-items: flex-end; }
+.ptr-dot { margin-bottom: 8px; width: 40px; height: 40px; border-radius: 50%; background: var(--surface-container-high, var(--surface-high)); display: grid; place-items: center; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+
+/* full-screen photo viewer (PhotoViewer in Photos.kt: black at 94%, fit, 8dp padding, close top-end) */
+.photo-viewer { position: fixed; inset: 0; z-index: 80; background: rgba(0,0,0,.94); display: grid; place-items: center; animation: fade-in .2s; }
+.photo-viewer img { max-width: 100%; max-height: 100%; object-fit: contain; padding: 8px; box-sizing: border-box; }
+.photo-close { position: absolute; top: calc(8px + env(safe-area-inset-top)); right: 8px; }
+.photo-card { display: flex; align-items: center; width: 100%; border-radius: 16px; background: var(--surface-container); padding: 10px; }
+.photo-thumb { width: 56px; height: 56px; border-radius: 12px; object-fit: cover; flex: none; display: grid; place-items: center; }
+.photo-detail { display: block; width: 100%; max-height: 220px; object-fit: cover; border-radius: 16px; }
+
+/* Android shows no scrollbars: everything still scrolls, just without the bar */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }
+.photo-viewer img { animation: pop .24s cubic-bezier(.2,0,0,1); }

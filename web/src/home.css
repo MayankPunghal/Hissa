@@ -1,0 +1,46 @@
+/* Home shell (Home.kt Scaffold + NavigationBar + FAB), list rows and menus. dp = px. */
+.home { position: relative; height: 100%; background: var(--background); overflow: hidden; }
+.tab-scroll { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; }
+
+/* Frosted glass bar: lists scroll underneath and are blurred through it (haze blur 24dp, tint = background @ 55%) */
+.navbar-wrap { position: absolute; left: 0; right: 0; bottom: 0; z-index: 20; background: color-mix(in srgb, var(--background) 55%, transparent); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); border-top: 1px solid color-mix(in srgb, var(--outline-variant) 50%, transparent); padding-bottom: var(--safe-bottom); }
+.navbar { height: 80px; display: flex; }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 12px; gap: 4px; color: var(--on-surface-variant); }
+.nav-item[aria-selected="true"] { color: var(--on-surface); }
+.nav-ind { width: 64px; height: 32px; border-radius: 16px; display: grid; place-items: center; position: relative; }
+.nav-ind::before { content: ""; position: absolute; inset: 0; border-radius: 16px; background: var(--primary-container); transform: scaleX(0); opacity: 0; transition: transform .25s cubic-bezier(.2,0,0,1), opacity .15s; }
+.nav-item[aria-selected="true"] .nav-ind::before { transform: scaleX(1); opacity: 1; }
+.nav-item[aria-selected="true"] .nav-ind .icon { color: var(--on-primary-container); }
+.nav-ind .icon { position: relative; }
+/* M3 NavigationBarItem has a ripple state layer on the indicator, not a press scale */
+.nav-ind::after { content: ""; position: absolute; inset: 0; border-radius: 16px; background: var(--on-surface); opacity: 0; transition: opacity .1s; }
+.nav-item:active .nav-ind::after { opacity: .1; }
+.nav-item { cursor: pointer; user-select: none; }
+.home .fab { position: absolute; right: 16px; bottom: calc(80px + var(--safe-bottom) + 16px); z-index: 25; }
+/* Home.kt tab AnimatedContent: fadeIn(tween(240, delay 60)) + slideInVertically(tween(280)) { it / 30 } */
+@keyframes home-fade { from { opacity: 0; } }
+@keyframes home-slide { from { transform: translateY(3.333%); } }
+.home .tab-in { animation: home-fade 240ms cubic-bezier(.4,0,.2,1) 60ms both, home-slide 280ms cubic-bezier(.4,0,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .home .tab-in { animation: none; } }
+
+.tab-head { display: flex; align-items: center; padding: 12px 20px 4px; }
+.tab-head h1 { flex: 1; margin: 0; }
+.join-pill { height: 44px; border-radius: 999px; background: var(--surface-container); padding: 0 16px; display: flex; align-items: center; gap: 8px; }
+
+.row { display: flex; align-items: center; width: 100%; text-align: left; }
+.row-main { flex: 1; min-width: 0; }
+.col-end { display: flex; flex-direction: column; align-items: flex-end; flex: none; }
+.circle { border-radius: 50%; display: grid; place-items: center; flex: none; }
+.offline { margin: 8px 20px; padding: 14px; border-radius: 14px; background: var(--surface-container); display: flex; align-items: center; gap: 12px; color: var(--on-surface-variant); }
+
+.menu-wrap { position: relative; }
+.menu.end { right: 0; transform-origin: top right; }
+.menu.start { left: 0; transform-origin: top left; }
+.menu-scrim { position: fixed; inset: 0; z-index: 40; }
+.menu { position: absolute; top: 100%; z-index: 41; min-width: 200px; background: var(--surface-container); border-radius: 8px; padding: 8px 0; box-shadow: 0 3px 8px rgba(0,0,0,.25), 0 1px 3px rgba(0,0,0,.2); animation: pop .15s ease-out; transform-origin: top right; }
+.menu-item { width: 100%; height: 48px; padding: 0 12px; display: flex; align-items: center; gap: 12px; text-align: left; }
+.menu-item:hover { background: color-mix(in srgb, var(--on-surface) 8%, transparent); }
+.radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--on-surface-variant); display: grid; place-items: center; flex: none; }
+.radio.on { border-color: var(--primary); }
+.radio.on::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); }
+.badge-cam { position: absolute; right: 0; bottom: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: var(--on-primary); display: grid; place-items: center; }

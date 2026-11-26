@@ -48,7 +48,6 @@ data class PairLine(val group: Group, val cents: Long)
  * Only expenses you are part of count, and a payment simply flows the same way.
  */
 fun pairwise(me: String, d: HomeData): Map<String, List<PairLine>> {
-    val byGroup = d.groups.associateBy { it.id }
     val out = HashMap<String, MutableMap<String, Long>>() // friend -> groupId -> cents
     fun add(friend: String, gid: String, c: Long) {
         val m = out.getOrPut(friend) { HashMap() }; m[gid] = (m[gid] ?: 0L) + c
@@ -56,7 +55,7 @@ fun pairwise(me: String, d: HomeData): Map<String, List<PairLine>> {
     d.recent.forEach { e ->
         e.transfers().forEach { t -> if (t.to == me) add(t.from, e.groupId, t.cents) else if (t.from == me) add(t.to, e.groupId, -t.cents) }
     }
-    return out.mapValues { (_, m) -> m.mapNotNull { (gid, c) -> byGroup[gid]?.let { PairLine(it, c) } }.filter { it.cents != 0L } }
+    return out.mapValues { (_, m) -> d.groups.mapNotNull { g -> m[g.id]?.let { PairLine(g, it) } }.filter { it.cents != 0L } }
 }
 
 

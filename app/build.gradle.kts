@@ -66,7 +66,6 @@ dependencies {
     implementation("dev.chrisbanes.haze:haze:1.6.10") // frosted-glass bars
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.core:core-ktx:1.15.0")
-    implementation("com.google.mlkit:text-recognition:16.0.1") // reads receipts on the phone, no network
     implementation(platform("io.github.jan-tennert.supabase:bom:3.0.3"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
     implementation("io.github.jan-tennert.supabase:auth-kt")

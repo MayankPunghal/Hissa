@@ -1,0 +1,14 @@
+/* App frame: phone layout in a centred column up to 640px, like MainActivity (widthIn(max = 640.dp)). */
+.frame { height: 100%; display: flex; justify-content: center; }
+.frame-inner { padding-top: var(--safe-top); width: 100%; max-width: 640px; height: 100%; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.screen { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; position: relative; -webkit-overflow-scrolling: touch; }
+/* Group opens: slide in from 1/5 width + fade, 280ms (Home.kt AnimatedContent) */
+@keyframes screen-in { from { opacity: 0; transform: translateX(20%); } to { opacity: 1; transform: none; } }
+@keyframes tab-in { from { opacity: 0; transform: translateY(3.3%); } to { opacity: 1; transform: none; } }
+@keyframes cross { from { opacity: 0; } to { opacity: 1; } }
+.screen-in { animation: screen-in 280ms cubic-bezier(.4,0,.2,1) both; }
+.tab-in { animation: tab-in 280ms cubic-bezier(.4,0,.2,1) 60ms both; }
+.cross-in { animation: cross 220ms ease-out both; }
+
+.auth-col { height: 100%; overflow-y: auto; padding: 0 24px var(--safe-bottom); display: flex; flex-direction: column; }
+.stack-12 { display: flex; flex-direction: column; gap: 12px; }

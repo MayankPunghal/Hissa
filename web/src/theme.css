@@ -1,0 +1,90 @@
+/* Tokens copied 1:1 from app/.../Theme.kt. dp = px, sp = px. Change a value in both places. */
+@font-face { font-family: Manrope; src: url("/fonts/manrope.ttf") format("truetype"); font-weight: 200 800; font-display: swap; }
+
+:root {
+  color-scheme: light;
+  --primary:#FFB020; --on-primary:#1B1300; --primary-container:#FFF0CC; --on-primary-container:#3A2700;
+  --secondary:#111111; --on-secondary:#fff; --secondary-container:#F3F3F1; --on-secondary-container:#111111;
+  --background:#fff; --on-background:#111111; --surface:#fff; --on-surface:#111111;
+  --surface-variant:#F3F3F1; --on-surface-variant:#6A6A66;
+  --surface-lowest:#fff; --surface-low:#F8F8F6; --surface-container:#F3F3F1; --surface-high:#EDEDEA; --surface-highest:#E7E7E3;
+  --outline:#8C8C87; --outline-variant:#E4E4E0;
+  --error:#D93A32; --on-error:#fff; --error-container:#FDE8E6; --on-error-container:#5C0F0A;
+  --inverse-surface:#111111; --inverse-on-surface:#fff;
+  --owed:#0B7A42; --owed-bg:#E3F6EB; --owe:#D1342B; --owe-bg:#FDE8E6;
+  --scrim:rgba(0,0,0,.32);
+  --r-xs:8px; --r-s:12px; --r-m:16px; --r-l:20px; --r-xl:28px;
+  --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --primary:#FFB62E; --on-primary:#1B1300; --primary-container:#3D2A00; --on-primary-container:#FFE2A0;
+    --secondary:#F2F2F0; --on-secondary:#111111; --secondary-container:#202023; --on-secondary-container:#F2F2F0;
+    --background:#0B0B0C; --on-background:#F2F2F0; --surface:#0B0B0C; --on-surface:#F2F2F0;
+    --surface-variant:#18181A; --on-surface-variant:#A0A09B;
+    --surface-lowest:#070708; --surface-low:#121214; --surface-container:#18181A; --surface-high:#202023; --surface-highest:#28282C;
+    --outline:#77776F; --outline-variant:#2A2A2E;
+    --error:#FF7A72; --on-error:#3A0905; --error-container:#33100E; --on-error-container:#FFD8D4;
+    --inverse-surface:#F2F2F0; --inverse-on-surface:#111111;
+    --owed:#3DD68C; --owed-bg:#0F2A1D; --owe:#FF7A72; --owe-bg:#33100E;
+    --scrim:rgba(0,0,0,.32);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --primary:#FFB62E; --on-primary:#1B1300; --primary-container:#3D2A00; --on-primary-container:#FFE2A0;
+  --secondary:#F2F2F0; --on-secondary:#111111; --secondary-container:#202023; --on-secondary-container:#F2F2F0;
+  --background:#0B0B0C; --on-background:#F2F2F0; --surface:#0B0B0C; --on-surface:#F2F2F0;
+  --surface-variant:#18181A; --on-surface-variant:#A0A09B;
+  --surface-lowest:#070708; --surface-low:#121214; --surface-container:#18181A; --surface-high:#202023; --surface-highest:#28282C;
+  --outline:#77776F; --outline-variant:#2A2A2E;
+  --error:#FF7A72; --on-error:#3A0905; --error-container:#33100E; --on-error-container:#FFD8D4;
+  --inverse-surface:#F2F2F0; --inverse-on-surface:#111111;
+  --owed:#3DD68C; --owed-bg:#0F2A1D; --owe:#FF7A72; --owe-bg:#33100E;
+  --scrim:rgba(0,0,0,.32);
+}
+
+* { box-sizing: border-box; margin: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+/* Native-app feel: the page never scrolls or rubber-bands; only inner screens scroll. No text selection, tap delay or callouts on UI chrome. */
+body { position: fixed; inset: 0; width: 100%; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-text-size-adjust: 100%; touch-action: manipulation; }
+input, textarea { -webkit-user-select: text; user-select: text; }
+img { -webkit-user-drag: none; user-drag: none; }
+body {
+  font-family: Manrope, system-ui, sans-serif; font-weight: 500; font-size: 14px; line-height: 20px;
+  font-feature-settings: "tnum"; background: var(--background); color: var(--on-background);
+  -webkit-font-smoothing: antialiased; overscroll-behavior-y: none;
+}
+button, input, textarea, select { font: inherit; color: inherit; font-feature-settings: inherit; }
+button { background: none; border: 0; cursor: pointer; padding: 0; }
+a { color: inherit; text-decoration: none; }
+#app { height: 100%; }
+
+/* Material3 type scale (Theme.kt HissaType). Android lays a line out at max(lineHeight, 1.368 x size), the natural height of Manrope, so the big styles are taller than their nominal lineHeight; same here. */
+.t-display-s { font-weight: 800; font-size: 34px; line-height: 46.5px; letter-spacing: -.6px; }
+.t-display-m { font-weight: 800; font-size: 44px; line-height: 60px; letter-spacing: -1px; }
+.t-display-l { font-weight: 800; font-size: 56px; line-height: 76.5px; letter-spacing: -1.5px; }
+.t-headline-l { font-weight: 700; font-size: 30px; line-height: 41px; letter-spacing: -.5px; }
+.t-headline-m { font-weight: 700; font-size: 24px; line-height: 32.8px; letter-spacing: -.3px; }
+.t-headline-s { font-weight: 700; font-size: 20px; line-height: 27.4px; letter-spacing: -.2px; }
+.t-title-l { font-weight: 700; font-size: 20px; line-height: 27.4px; }
+.t-title-m { font-weight: 600; font-size: 16px; line-height: 22px; }
+.t-title-s { font-weight: 600; font-size: 14px; line-height: 20px; }
+.t-body-l { font-weight: 500; font-size: 16px; line-height: 24px; }
+.t-body-m { font-weight: 500; font-size: 14px; line-height: 20px; }
+.t-body-s { font-weight: 500; font-size: 12px; line-height: 16px; }
+.t-label-l { font-weight: 600; font-size: 14px; line-height: 20px; }
+.t-label-m { font-weight: 600; font-size: 12px; line-height: 16px; }
+.t-label-s { font-weight: 500; font-size: 11px; line-height: 16px; }
+.muted { color: var(--on-surface-variant); }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.icon { display: inline-block; width: 24px; height: 24px; flex: none; fill: currentColor; }
+.icon svg { width: 100%; height: 100%; fill: currentColor; display: block; }
+
+/* Press feedback (Components.kt pressable): spring scale to .97, no ripple */
+:root { --spring-press: linear(0, 0.0788, 0.2657, 0.4955, 0.7194, 0.9065, 1.0422, 1.1244, 1.1596, 1.1591, 1.1353, 1.0999, 1.0622, 1.0285, 1.0023, 0.9849, 0.9758, 0.9734, 0.9758, 0.9809, 0.987, 0.9929, 0.9978, 1.0013, 1.0034, 1.0043, 1.0042, 1.0035, 1.0026); --spring-pill: linear(0, 0.043, 0.1446, 0.2733, 0.4081, 0.5358, 0.6492, 0.745, 0.8227, 0.8833, 0.9289, 0.9619, 0.9847, 0.9996, 1.0086, 1.0133, 1.015, 1.0149, 1.0136, 1.0118, 1.0098, 1.0078, 1.006, 1.0044, 1.0031, 1.0021, 1.0013, 1.0008, 1.0004); }
+.press { transition: transform 600ms var(--spring-press); cursor: pointer; user-select: none; }
+.press:active { transform: scale(.97); }
+@media (prefers-reduced-motion: reduce) { .press, .press:active { transition: none; transform: none; } }

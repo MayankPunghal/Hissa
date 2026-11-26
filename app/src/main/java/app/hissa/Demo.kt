@@ -85,7 +85,11 @@ object Demo {
         x.payers.filter { it.value > 0 }.map { PayerRow(it.key, it.value) },
     )
 
-    fun addExpense(gid: String, x: Api.ExpenseInput, settlement: Boolean) { expenses.add(build("x" + System.nanoTime(), gid, x, settlement)) }
+    fun addExpense(gid: String, x: Api.ExpenseInput, settlement: Boolean): String { val id = "x" + System.nanoTime(); expenses.add(build(id, gid, x, settlement)); return id }
+
+    private val photos = mutableMapOf<String, String>()
+    fun photo(id: String): String? = photos[id]
+    fun setPhoto(id: String, image: String?) { if (image.isNullOrEmpty()) photos.remove(id) else photos[id] = image }
 
     fun editExpense(id: String, x: Api.ExpenseInput) {
         val i = expenses.indexOfFirst { it.id == id }

@@ -95,6 +95,8 @@ import kotlinx.serialization.json.put
     val offline: Boolean = false,
 )
 
+@Serializable data class PhotoRow(val image: String)
+
 @Serializable data class RecurringRow(
     val id: String, val description: String,
     @SerialName("amount_cents") val amountCents: Long,
@@ -310,16 +312,19 @@ object Api {
     data class ExpenseInput(
         val desc: String, val cents: Long, val payers: Map<String, Long>, val shares: Map<String, Long>,
         val date: java.time.LocalDate = java.time.LocalDate.now(), val category: String? = null, val notes: String? = null,
+        /** A small JPEG data URL (order screenshot, receipt). Saved only when [photoChanged]; null with photoChanged removes it. */
+        val photo: String? = null, val photoChanged: Boolean = false,
     )
 
     suspend fun addExpense(gid: String, x: ExpenseInput, settlement: Boolean = false) {
-        if (demo) return Demo.addExpense(gid, x, settlement)
-        sb.postgrest.rpc("add_expense2", buildJsonObject {
+        if (demo) { val id = Demo.addExpense(gid, x, settlement); if (x.photo != null) Demo.setPhoto(id, x.photo); return }
+        val id = sb.postgrest.rpc("add_expense2", buildJsonObject {
             put("p_group_id", gid); put("p_description", x.desc); put("p_amount_cents", x.cents)
             put("p_payers", rows(x.payers, "paid_cents")); put("p_splits", rows(x.shares, "share_cents"))
             put("p_expense_date", x.date.toString()); put("p_is_settlement", settlement)
             put("p_category", x.category ?: ""); put("p_notes", x.notes ?: "")
-        })
+        }).data.trim().trim('"')
+        if (x.photo != null) setExpensePhoto(id, x.photo)
     }
 
     /** A payment of [cents] from [from] to [to]. */
@@ -327,12 +332,21 @@ object Api {
         addExpense(gid, ExpenseInput("Settle up", cents, mapOf(from to cents), mapOf(to to cents)), true)
 
     suspend fun editExpense(id: String, x: ExpenseInput) {
-        if (demo) return Demo.editExpense(id, x)
-        sb.postgrest.rpc("edit_expense", buildJsonObject {
+        if (demo) { Demo.editExpense(id, x); if (x.photoChanged) Demo.setPhoto(id, x.photo); return }
+        val newId = sb.postgrest.rpc("edit_expense", buildJsonObject {
             put("p_expense_id", id); put("p_description", x.desc); put("p_amount_cents", x.cents)
             put("p_payers", rows(x.payers, "paid_cents")); put("p_splits", rows(x.shares, "share_cents"))
             put("p_expense_date", x.date.toString()); put("p_category", x.category ?: ""); put("p_notes", x.notes ?: "")
-        })
+        }).data.trim().trim('"')
+        if (x.photoChanged) setExpensePhoto(newId, x.photo) // an unchanged photo is carried over by the server
+    }
+
+    // ----- expense photos -----
+    suspend fun expensePhoto(id: String): String? =
+        if (demo) Demo.photo(id) else sb.from("expense_photos").select { filter { eq("expense_id", id) } }.decodeList<PhotoRow>().firstOrNull()?.image
+    suspend fun setExpensePhoto(id: String, image: String?) {
+        if (demo) return Demo.setPhoto(id, image)
+        sb.postgrest.rpc("set_expense_photo", buildJsonObject { put("p_expense_id", id); put("p_image", image ?: "") })
     }
 
     // ----- recurring expenses -----

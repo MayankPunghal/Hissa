@@ -1,0 +1,6 @@
+account_circle add add_a_photo arrow_back bolt calendar_month photo_camera redeem check close cloud cloud_off delete directions_car logout flight groups home hotel info key local_gas_station local_hospital lock movie palette payments person person_add call photo_library receipt_long restaurant search settings share shopping_bag shopping_cart tune visibility visibility_off
+arrow_forward chevron_right expand_more expand_less edit content_copy more_vert notifications bar_chart pie_chart receipt download upload schedule repeat group history filter_list sort refresh warning error done check_circle send qr_code download_done file_download file_upload event autorenew open_in_new link
+
+add_a_photo photo_camera photo_library close calendar_month add
+info@outlined
+exit_to_app

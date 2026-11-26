@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -330,6 +331,18 @@ fun GroupScreen(g: Group, model: HomeModel, focusExpense: String? = null, onBack
                 style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant,
             )
             e.notes?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp)) }
+            // The photo (order screenshot, receipt) is fetched only now, so expense lists stay light.
+            var shot by remember(e.id) { mutableStateOf<String?>(null) }
+            var bigShot by remember(e.id) { mutableStateOf(false) }
+            LaunchedEffect(e.id) { shot = runCatching { Api.expensePhoto(e.id) }.getOrNull() }
+            decodeGroupImage(shot)?.let { bmp ->
+                Spacer(Modifier.height(12.dp))
+                androidx.compose.foundation.Image(
+                    bmp, contentDescription = "Expense photo, tap to enlarge", contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 220.dp).clip(RoundedCornerShape(16.dp)).pressable(role = null) { bigShot = true },
+                )
+                if (bigShot) PhotoViewer(shot!!) { bigShot = false }
+            }
             Spacer(Modifier.height(16.dp))
             if (!e.isSettlement) {
                 Text("Paid by", style = MaterialTheme.typography.titleSmall, color = cs.onSurfaceVariant)

@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/logo.svg" alt="Hissa logo: free open-source Splitwise alternative" width="96">
+<a href="https://github.com/MayankPunghal/Hissa/releases/latest"><img src="docs/banner.png" alt="Hissa: the free, open-source Splitwise alternative for Android. Free forever, no ads, no limits." width="100%"></a>
 
 # Hissa: the free, open-source Splitwise alternative
 
@@ -9,7 +9,7 @@
 [![Stars](https://img.shields.io/github/stars/MayankPunghal/Hissa?style=for-the-badge&color=ffb020&labelColor=111111)](https://github.com/MayankPunghal/Hissa/stargazers)
 [![Latest release](https://img.shields.io/github/v/release/MayankPunghal/Hissa?style=for-the-badge&color=ffb020&labelColor=111111)](https://github.com/MayankPunghal/Hissa/releases/latest)
 [![License: MIT](https://img.shields.io/github/license/MayankPunghal/Hissa?style=for-the-badge&labelColor=111111)](LICENSE)
-[![CI](https://img.shields.io/github/actions/workflow/status/MayankPunghal/Hissa/ci.yml?style=for-the-badge&label=CI&labelColor=111111)](https://github.com/MayankPunghal/Hissa/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/MayankPunghal/Hissa/release.yml?style=for-the-badge&label=Build&labelColor=111111)](https://github.com/MayankPunghal/Hissa/actions/workflows/release.yml)
 ![Android 8+](https://img.shields.io/badge/Android-8.0%2B-3ddc84?style=for-the-badge&logo=android&logoColor=white&labelColor=111111)
 ![Kotlin](https://img.shields.io/badge/Kotlin-Jetpack_Compose-7f52ff?style=for-the-badge&logo=kotlin&logoColor=white&labelColor=111111)
 ![Supabase](https://img.shields.io/badge/Backend-Supabase-3ecf8e?style=for-the-badge&logo=supabase&logoColor=white&labelColor=111111)

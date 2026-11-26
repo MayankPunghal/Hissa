@@ -323,3 +323,13 @@ fun InfoTip(text: String, modifier: Modifier = Modifier) {
         }
     }
 }
+
+/** Fade and rise on first appearance, staggered by position. Only the first rows animate, so scrolling stays calm. */
+fun Modifier.enterIn(index: Int): Modifier = if (index > 9) this else composed {
+    val p = remember { androidx.compose.animation.core.Animatable(0f) }
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(index * 40L)
+        p.animateTo(1f, tween(380, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+    }
+    graphicsLayer { alpha = p.value; translationY = (1f - p.value) * 24.dp.toPx() }
+}

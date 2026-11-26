@@ -23,6 +23,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,8 +53,10 @@ private fun catColor(c: Cat): Color = listOf(
 
 @Composable
 private fun Bar(fraction: Float, color: Color, modifier: Modifier = Modifier) {
+    val grow = remember { androidx.compose.animation.core.Animatable(0f) }
+    LaunchedEffect(fraction) { grow.animateTo(fraction.coerceIn(0.02f, 1f), tween(650, easing = androidx.compose.animation.core.FastOutSlowInEasing)) }
     Box(modifier.clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surfaceContainer)) {
-        Box(Modifier.fillMaxHeight().fillMaxWidth(fraction.coerceIn(0.02f, 1f)).clip(RoundedCornerShape(8.dp)).background(color))
+        Box(Modifier.fillMaxHeight().fillMaxWidth(grow.value).clip(RoundedCornerShape(8.dp)).background(color))
     }
 }
 
@@ -115,12 +120,14 @@ fun LazyListScope.insightItems(
             val cs = MaterialTheme.colorScheme
             val desc = byCat.joinToString(", ") { "${it.key.label} ${it.value * 100 / total} percent" }
             Box(Modifier.size(150.dp).semantics { contentDescription = "Spending by category: $desc" }, Alignment.Center) {
+                val sweepIn = remember { androidx.compose.animation.core.Animatable(0f) }
+                LaunchedEffect(total) { sweepIn.animateTo(1f, tween(800, easing = androidx.compose.animation.core.FastOutSlowInEasing)) }
                 Canvas(Modifier.size(150.dp)) {
                     val stroke = 26.dp.toPx()
                     val inset = stroke / 2
                     var start = -90f
                     byCat.forEach { (c, v) ->
-                        val sweep = 360f * v / total
+                        val sweep = 360f * v / total * sweepIn.value
                         drawArc(
                             catColor(c), start + 1f, (sweep - 2f).coerceAtLeast(0.5f), false,
                             topLeft = Offset(inset, inset), size = Size(size.width - stroke, size.height - stroke), style = Stroke(stroke),

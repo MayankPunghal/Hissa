@@ -217,7 +217,7 @@ fun GroupScreen(g: Group, model: HomeModel, focusExpense: String? = null, onBack
                                 items(list, key = { it.id }) { e ->
                                     val mine = e.netFor(me)
                                     Row(
-                                        Modifier.animateItem().fillMaxWidth().pressable(role = null) { detail = e }.padding(horizontal = 20.dp, vertical = 10.dp),
+                                        Modifier.animateItem().enterIn(list.indexOf(e)).fillMaxWidth().pressable(role = null) { detail = e }.padding(horizontal = 20.dp, vertical = 10.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
                                         Box(Modifier.size(44.dp).clip(CircleShape).background(if (e.isSettlement) cs.primaryContainer else cs.surfaceContainer), Alignment.Center) {
@@ -257,7 +257,7 @@ fun GroupScreen(g: Group, model: HomeModel, focusExpense: String? = null, onBack
                         item { SectionTitle("Settle up") }
                         if (plan.isEmpty()) item { Text("Hisaab barabar! Everyone is even.", style = MaterialTheme.typography.bodyLarge, color = cs.onSurfaceVariant, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) }
                         items(plan, key = { "t${it.from}${it.to}" }) { t ->
-                            Row(Modifier.animateItem().fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(Modifier.animateItem().enterIn(plan.indexOf(t)).fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) {
                                     Text("${n(t.from)} ${if (t.from == me) "pay" else "pays"} ${n(t.to)}", style = MaterialTheme.typography.titleMedium)
                                     Text(money(t.cents, g.currency), style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant)
@@ -270,7 +270,7 @@ fun GroupScreen(g: Group, model: HomeModel, focusExpense: String? = null, onBack
                         item { SectionTitle("Who's owed what") }
                         items(d.members, key = { "m$it" }) { m ->
                             val v = d.net[m] ?: 0L
-                            Row(Modifier.animateItem().fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(Modifier.animateItem().enterIn(d.members.indexOf(m)).fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Avatar(model.fullName(m), m, 44.dp)
                                 Spacer(Modifier.width(14.dp))
                                 Text(n(m), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))

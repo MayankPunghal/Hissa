@@ -8,8 +8,8 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.togetherWith
 import androidx.compose.material3.HorizontalDivider
 import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.haze
-import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.hazeEffect
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -154,7 +154,7 @@ private fun Tabs(model: HomeModel, tab: Int, setTab: (Int) -> Unit, onOpen: (Gro
         containerColor = cs.background,
         bottomBar = {
             // Frosted glass: the lists scroll underneath and are blurred through the bar (Android 12+; older phones get a solid tint).
-            Column(Modifier.hazeChild(haze, HazeStyle(tint = dev.chrisbanes.haze.HazeTint(cs.background.copy(alpha = 0.9f)), blurRadius = 28.dp)).background(cs.background.copy(alpha = 0.78f))) {
+            Column(Modifier.hazeEffect(haze, HazeStyle(backgroundColor = cs.background, tints = listOf(dev.chrisbanes.haze.HazeTint(cs.background.copy(alpha = 0.55f))), blurRadius = 24.dp, noiseFactor = 0.04f))) {
                 HorizontalDivider(color = cs.outlineVariant.copy(alpha = 0.5f))
                 NavigationBar(containerColor = Color.Transparent, tonalElevation = 0.dp) {
                     listOf(
@@ -187,7 +187,7 @@ private fun Tabs(model: HomeModel, tab: Int, setTab: (Int) -> Unit, onOpen: (Gro
             }
         },
     ) { pad ->
-        Box(Modifier.padding(top = pad.calculateTopPadding()).fillMaxSize().haze(haze)) {
+        Box(Modifier.padding(top = pad.calculateTopPadding()).fillMaxSize().hazeSource(haze)) {
             androidx.compose.animation.AnimatedContent(
                 tab, label = "tab",
                 transitionSpec = {
@@ -250,7 +250,7 @@ private fun GroupsTab(model: HomeModel, onOpen: (Group) -> Unit, onJoin: () -> U
                         )
                     }
                     items(d.groups, key = { it.id }) { g ->
-                        GroupCard(g, d, Modifier.animateItem()) { onOpen(g) }
+                        GroupCard(g, d, Modifier.animateItem().enterIn(d.groups.indexOf(g))) { onOpen(g) }
                     }
                 }
             }
@@ -336,7 +336,7 @@ private fun ActivityTab(model: HomeModel, onOpenExpense: (Group, String) -> Unit
                         val group = d.groups.firstOrNull { it.id == e.groupId }
                         val cur = group?.currency ?: "INR"
                         val net = e.netFor(me)
-                        Row(Modifier.animateItem().fillMaxWidth().pressable(role = null) { group?.let { onOpenExpense(it, e.id) } }.padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.animateItem().enterIn(list.indexOf(e)).fillMaxWidth().pressable(role = null) { group?.let { onOpenExpense(it, e.id) } }.padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                             if (e.isSettlement) Box(Modifier.size(44.dp).clip(CircleShape).background(cs.primaryContainer), Alignment.Center) {
                                 Icon(Icons.Rounded.Check, null, tint = cs.onPrimaryContainer)
                             } else Box(Modifier.size(44.dp).clip(CircleShape).background(cs.surfaceContainer), Alignment.Center) { Icon(Cat.of(e.category).icon, null, Modifier.size(22.dp)) }

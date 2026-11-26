@@ -7,8 +7,7 @@
   <rect width="1200" height="320" rx="28" fill="url(#glow)"/>
   <g transform="translate(90 70) scale(1.7)">
     <rect width="108" height="108" rx="26" fill="#1f1f24"/>
-    <path d="M51,31 A26,26 0 0 0 51,83 Z" fill="#FFB020"/>
-    <path d="M57,25 A26,26 0 0 1 57,77 Z" fill="#fff"/>
+    <g transform="translate(8.07 7.92) scale(.0732)"><path d="M400,287 H470 Q532,290 532,365 V535 Q532,550 520,560 L505,573 Q495,590 512,606 L665,685 Q690,705 665,740 L532,808 V895 Q532,972 460,972 H400 Q265,972 265,840 V420 Q265,290 400,287 Z" fill="#fff"/><path d="M800,287 H850 Q990,290 990,420 V840 Q990,972 850,972 H800 Q722,970 722,900 V740 Q722,725 735,715 L750,700 Q760,680 745,670 L585,590 Q560,570 585,540 L722,468 V365 Q722,290 800,287 Z" fill="#FFB020"/></g>
   </g>
   <text x="320" y="165" font-family="Manrope, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="96" font-weight="800" fill="#ffffff">Hissa</text>
   <text x="324" y="215" font-family="Manrope, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="30" font-weight="500" fill="#b8b8c0">Split bills with friends. Free, open source, yours to host.</text>

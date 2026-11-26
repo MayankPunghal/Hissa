@@ -89,10 +89,9 @@ fun LazyListScope.insightItems(
     item {
         Column(Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             val biggest = spent.maxBy { it.amountCents }
-            val days = (java.time.temporal.ChronoUnit.DAYS.between(spent.minOf { LocalDate.parse(it.date) }, spent.maxOf { LocalDate.parse(it.date) }) + 1).coerceAtLeast(1)
             listOf(
                 listOf("Group total" to money(total, g.currency), "Your share" to money(myShare, g.currency), "You paid" to money(myPaid, g.currency)),
-                listOf("Expenses" to spent.size.toString(), "Per day" to money(total / days, g.currency), "Biggest" to money(biggest.amountCents, g.currency)),
+                listOf("Per person" to money(total / d.members.size.coerceAtLeast(1), g.currency), "Average" to money(total / spent.size, g.currency), "Biggest" to money(biggest.amountCents, g.currency)),
             ).forEach { rowItems ->
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     rowItems.forEach { (label, v) ->

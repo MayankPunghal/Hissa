@@ -1,0 +1,11 @@
+name: Feature request
+description: Suggest an idea for Hissa
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like Hissa to do?
+      description: Describe the problem first, then the idea. Mention any app that already does it well.
+    validations:
+      required: true

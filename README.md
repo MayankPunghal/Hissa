@@ -1,21 +1,66 @@
 <div align="center">
 
-<img src="docs/banner.svg" alt="Hissa: split bills with friends" width="100%">
+<img src="docs/logo.svg" alt="Hissa logo: free open-source Splitwise alternative" width="96">
+
+# Hissa: the free, open-source Splitwise alternative
+
+**Split bills with friends, roommates and travel groups. No ads. No daily limits. No paywall. Your data stays yours.**
+
+[![Stars](https://img.shields.io/github/stars/MayankPunghal/Hissa?style=for-the-badge&color=ffb020&labelColor=111111)](https://github.com/MayankPunghal/Hissa/stargazers)
+[![Latest release](https://img.shields.io/github/v/release/MayankPunghal/Hissa?style=for-the-badge&color=ffb020&labelColor=111111)](https://github.com/MayankPunghal/Hissa/releases/latest)
+[![License: MIT](https://img.shields.io/github/license/MayankPunghal/Hissa?style=for-the-badge&labelColor=111111)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/MayankPunghal/Hissa/ci.yml?style=for-the-badge&label=CI&labelColor=111111)](https://github.com/MayankPunghal/Hissa/actions/workflows/ci.yml)
+![Android 8+](https://img.shields.io/badge/Android-8.0%2B-3ddc84?style=for-the-badge&logo=android&logoColor=white&labelColor=111111)
+![Kotlin](https://img.shields.io/badge/Kotlin-Jetpack_Compose-7f52ff?style=for-the-badge&logo=kotlin&logoColor=white&labelColor=111111)
+![Supabase](https://img.shields.io/badge/Backend-Supabase-3ecf8e?style=for-the-badge&logo=supabase&logoColor=white&labelColor=111111)
+
+**[⬇ Download the APK](https://github.com/MayankPunghal/Hissa/releases/latest)** &nbsp;·&nbsp; **[⚡ Set up in 10 minutes](#quick-start)** &nbsp;·&nbsp; **[✨ Features](#what-you-get)** &nbsp;·&nbsp; **[🌐 Website](https://mayankpunghal.github.io/Hissa/)**
 
 <br>
 
-[![Latest release](https://img.shields.io/github/v/release/MayankPunghal/Hissa?style=for-the-badge&color=ffb020&labelColor=111111)](../../releases/latest)
-[![CI](https://img.shields.io/github/actions/workflow/status/MayankPunghal/Hissa/ci.yml?style=for-the-badge&label=CI&labelColor=111111)](../../actions/workflows/ci.yml)
-[![License](https://img.shields.io/github/license/MayankPunghal/Hissa?style=for-the-badge&labelColor=111111)](LICENSE)
-![Android 8+](https://img.shields.io/badge/Android-8.0%2B-3ddc84?style=for-the-badge&logo=android&logoColor=white&labelColor=111111)
-![Kotlin](https://img.shields.io/badge/Kotlin-Compose-7f52ff?style=for-the-badge&logo=kotlin&logoColor=white&labelColor=111111)
-![Supabase](https://img.shields.io/badge/Backend-Supabase-3ecf8e?style=for-the-badge&logo=supabase&logoColor=white&labelColor=111111)
-
-**[Download the app](../../releases/latest)** &nbsp;·&nbsp; **[Set up in 10 minutes](#how-it-works)** &nbsp;·&nbsp; **[Features](#what-you-get)** &nbsp;·&nbsp; **[Automation](#automation)**
+<img src="docs/hero.png" alt="Hissa Android app screenshots: groups, expenses, balances and spending insights" width="100%">
 
 </div>
 
-An Android app for sharing expenses in groups, tracking who owes whom, and settling up. No ads, no paywall, no limits on expenses. It runs on your own free [Supabase](https://supabase.com) account, so your data stays with you.
+**Hissa** is a free and open-source expense splitter for Android, built as an alternative to **Splitwise**, Splid and Tricount. Track shared expenses in groups, see who owes whom, simplify debts and settle up, all without ads, expense limits or a subscription. It runs on your own free [Supabase](https://supabase.com) project, so there is no company in the middle and your data stays with you. Licensed under the [MIT License](LICENSE).
+
+> ⭐ **If Hissa saves you from an awkward "who paid for what" chat, please [star the repo](https://github.com/MayankPunghal/Hissa). It is the single best way to help other people find it.**
+
+---
+
+## Why Hissa instead of Splitwise?
+
+| | **Hissa** | Splitwise (free) |
+|---|:---:|:---:|
+| Price | **Free forever** | Free tier with limits, paid Pro |
+| Ads | **None** | Yes |
+| Daily expense limit | **None** | Yes on the free plan |
+| Open source (MIT) | **Yes, read and change every line** | No |
+| Your data | **In your own database, export any time** | On their servers |
+| Itemised bills with tax and tip | **Free** | Pro |
+| Receipt scanning | **Free, on your phone, nothing uploaded** | Pro |
+| Charts and CSV export | **Free** | Pro |
+| Pay by UPI in one tap | **Yes** | No |
+| Self-hostable | **Yes** | No |
+| Platforms | Android | Android, iOS, web |
+
+Honest trade-off: Hissa is Android only for now, and you (or one friend) create a free Supabase project once, which takes about 10 minutes. After that everyone just installs the app. If you want zero setup and iOS, Splitwise is the easier pick. If you want free, private and open, use Hissa.
+
+Splitwise is a trademark of its owner. Hissa is an independent project and is not affiliated with Splitwise. Comparison reflects Splitwise's public plans at the time of writing and may change.
+
+---
+
+## Quick start
+
+You need: an Android phone, a free Supabase account and about 10 minutes. No coding, no Android Studio, no server.
+
+| | Step | Time |
+|:--:|---|:--:|
+| **1** | **Create the backend.** Sign up at [supabase.com](https://supabase.com), create a project, open **SQL Editor**, paste [`supabase/setup.sql`](supabase/setup.sql) and press **Run**. [Full steps](#step-1--set-up-the-backend-5-min) | 5 min |
+| **2** | **Install the app.** Download the APK from [Releases](https://github.com/MayankPunghal/Hissa/releases/latest) and open it on your phone. [Other ways](#step-2--get-the-app) | 2 min |
+| **3** | **Connect and invite.** Paste your Supabase **Project URL** and **anon key** into the app, sign up, create a group and share the invite link. [Details](#step-3--connect-and-use-it) | 3 min |
+
+Stuck? See [Troubleshooting](#troubleshooting) or [open an issue](https://github.com/MayankPunghal/Hissa/issues/new/choose).
 
 ---
 
@@ -28,15 +73,35 @@ An Android app for sharing expenses in groups, tracking who owes whom, and settl
 - **Repeating expenses** (weekly or monthly), **edit** any expense, **notes** and a **date** picker, and a **default split** you can save per group.
 - **Search** expenses and activity.
 - **Simplify group debts** (on by default, per group): A owes B and B owes C becomes A pays C.
-- **Settle up** in one tap, with an optional **UPI** button (friends add their UPI ID in Account).
+- **Settle up** in one tap, with an optional **UPI** button (friends add their UPI ID in Account), or copy a friend's saved mobile number to pay by number in any UPI app.
 - **Insights** per group: category donut, spend per day, by month, by weekday, paid vs share, per person and average, biggest expenses, with a date range filter, and **CSV export**.
-- **Profile photo** in Account (crop it with a drag-and-pinch frame), shown next to your name everywhere, plus an optional **mobile number** friends can copy to pay you in any UPI app, and a tinted balance card (you are owed / you owe / all settled up) on Groups, Friends and each group.
+- **Profile photo** in Account (crop it with a drag-and-pinch frame), shown next to your name everywhere, plus a tinted balance card (you are owed / you owe / all settled up) on Groups, Friends and each group.
 - **Friends tab** with what you owe each person across all your groups.
 - **Activity feed**, **dark mode**, **offline reading** (the last data is kept on the phone) and **live updates**.
 - **Group settings**: name, picture, members, leave (once settled up) or delete.
 - **No ads, no limits, your own server.** Everyone in a group sees the same data, and the data lives in your database.
 
-Not built yet: push notifications and translations. Everything is in rupees (INR) for now. See [Roadmap](#roadmap).
+Not built yet: push notifications, translations and other currencies (everything is in rupees for now). See [Roadmap](#roadmap).
+
+---
+
+## FAQ
+
+**Is Hissa really free?** Yes. The app is MIT licensed, and Supabase's free plan (500 MB) is plenty for years of group expenses. There is no premium tier.
+
+**Is there a free Splitwise alternative with no ads and no limits?** That is exactly what Hissa is: unlimited groups and expenses, no ads, itemised splits, charts and CSV export, all free.
+
+**Is there an open-source Splitwise alternative for Android?** Yes. Hissa is written in Kotlin and Jetpack Compose and the whole source is in this repo.
+
+**Does it work in India with UPI?** Yes. Amounts are in rupees, and settling up can open your UPI app or copy a friend's number.
+
+**Is my data private?** Everything lives in your own Supabase project, protected by row level security so people only see groups they belong to. There is no analytics and no tracking.
+
+**Can I import my Splitwise data?** Not yet. See the [Roadmap](#roadmap).
+
+**Can I use it on iPhone?** Not yet. Hissa is Android only for now.
+
+**Can I use it for trips, roommates and couples?** Yes. Create one group per trip, flat or relationship and invite everyone with a link.
 
 ---
 
@@ -50,11 +115,6 @@ Not built yet: push notifications and translations. Everything is in rupees (INR
 
 There is no server for you to run. The app talks directly to Supabase. A single SQL script, [`supabase/setup.sql`](supabase/setup.sql), creates every table, security rule and function in one go.
 
-Setup takes about 10 minutes and costs nothing:
-
-1. **[Set up the backend](#step-1--set-up-the-backend-5-min)** on Supabase (free).
-2. **[Get the app](#step-2--get-the-app)** by downloading it, or building it in the cloud.
-3. **[Connect and use it](#step-3--connect-and-use-it)**, then invite friends.
 
 ---
 
@@ -318,12 +378,26 @@ supabase/setup.sql  complete, re-runnable backend (tables, RLS, functions, realt
 - [ ] Adding expenses while offline (reading offline works)
 - [ ] Push notifications
 - [x] Signed release APK
-- [ ] Languages other than English, other currencies, Play Store listing
+- [ ] Languages other than English, other currencies, import from Splitwise, iOS, Play Store listing
 
-Contributions and issues are welcome. Open an issue first for bigger changes.
+Contributions and issues are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md). Ideas to start with: a new language, a new currency, Splitwise CSV import.
 
 ## License
 
-[MIT](LICENSE). Use it, change it, share it.
+[MIT](LICENSE) © Hissa contributors. Use it, change it, sell it, share it. Attribution and the licence text must stay with copies.
 
 > Hissa is an independent open-source project and is not affiliated with Splitwise.
+
+---
+
+<div align="center">
+
+### Star history
+
+[![Star History Chart](https://api.star-history.com/svg?repos=MayankPunghal/Hissa&type=Date)](https://star-history.com/#MayankPunghal/Hissa&Date)
+
+**Found Hissa useful? [⭐ Star it](https://github.com/MayankPunghal/Hissa) and tell a friend who splits bills.**
+
+<sub>Keywords: Splitwise alternative, free Splitwise alternative, open source Splitwise, Splitwise alternative Android, split bills app, expense splitter, bill splitting app, group expense tracker, shared expenses, roommate expense tracker, trip expense splitter, Tricount alternative, Splid alternative, UPI bill split, Jetpack Compose, Supabase, self-hosted.</sub>
+
+</div>

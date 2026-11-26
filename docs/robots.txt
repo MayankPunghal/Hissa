@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /Hissa/join/
+
+Sitemap: https://mayankpunghal.github.io/Hissa/sitemap.xml

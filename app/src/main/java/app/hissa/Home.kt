@@ -154,7 +154,7 @@ private fun Tabs(model: HomeModel, tab: Int, setTab: (Int) -> Unit, onOpen: (Gro
         containerColor = cs.background,
         bottomBar = {
             // Frosted glass: the lists scroll underneath and are blurred through the bar (Android 12+; older phones get a solid tint).
-            Column(Modifier.hazeChild(haze, HazeStyle(tint = dev.chrisbanes.haze.HazeTint(cs.background.copy(alpha = 0.9f)), blurRadius = 28.dp))) {
+            Column(Modifier.hazeChild(haze, HazeStyle(tint = dev.chrisbanes.haze.HazeTint(cs.background.copy(alpha = 0.9f)), blurRadius = 28.dp)).background(cs.background.copy(alpha = 0.78f))) {
                 HorizontalDivider(color = cs.outlineVariant.copy(alpha = 0.5f))
                 NavigationBar(containerColor = Color.Transparent, tonalElevation = 0.dp) {
                     listOf(

@@ -7,7 +7,7 @@ on:
     paths: ["supabase/setup.sql"]
   workflow_dispatch:
 
-concurrency: database
+concurrency: release  # same group as release.yml so two psql runs of setup.sql never overlap
 
 jobs:
   apply:

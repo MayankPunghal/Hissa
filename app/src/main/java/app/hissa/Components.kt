@@ -336,28 +336,19 @@ fun Modifier.enterIn(index: Int): Modifier = if (index > 9) this else composed {
     graphicsLayer { alpha = p.value; translationY = (1f - p.value) * 24.dp.toPx() }
 }
 
-/** Extended FAB as glass: keeps the primary colour but lets the list blur through it (Android 12+; older phones get the tint alone). */
+/** Height of the frosted bottom bar, so scrolling tabs can end above it instead of under it. */
+val LocalNavPad = androidx.compose.runtime.compositionLocalOf { 0.dp }
+
+/** Extended FAB in the solid primary colour. [haze] is unused now that the glass look is gone; kept so call sites stay unchanged. */
 @Composable
-fun GlassFab(haze: dev.chrisbanes.haze.HazeState, text: String, onClick: () -> Unit) {
+fun GlassFab(@Suppress("UNUSED_PARAMETER") haze: dev.chrisbanes.haze.HazeState, text: String, onClick: () -> Unit) {
     val cs = MaterialTheme.colorScheme
     androidx.compose.material3.ExtendedFloatingActionButton(
-        onClick = onClick, containerColor = androidx.compose.ui.graphics.Color.Transparent, contentColor = cs.onPrimary,
-        shape = androidx.compose.foundation.shape.CircleShape,
-        elevation = androidx.compose.material3.FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
-        modifier = Modifier
-            .clip(androidx.compose.foundation.shape.CircleShape)
-            .dev_hazeGlass(haze, cs.primary)
-            .border(1.dp, androidx.compose.ui.graphics.Color.White.copy(alpha = 0.28f), androidx.compose.foundation.shape.CircleShape),
+        onClick = onClick, containerColor = cs.primary, contentColor = cs.onPrimary, shape = androidx.compose.foundation.shape.CircleShape,
+        elevation = androidx.compose.material3.FloatingActionButtonDefaults.elevation(2.dp, 2.dp, 2.dp, 2.dp),
     ) {
         androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Rounded.Add, null)
         androidx.compose.foundation.layout.Spacer(Modifier.width(8.dp))
         androidx.compose.material3.Text(text, style = MaterialTheme.typography.titleSmall)
     }
 }
-
-private fun Modifier.dev_hazeGlass(haze: dev.chrisbanes.haze.HazeState, tint: androidx.compose.ui.graphics.Color) = this.hazeEffect(
-    haze, dev.chrisbanes.haze.HazeStyle(backgroundColor = androidx.compose.ui.graphics.Color.Transparent, tints = listOf(dev.chrisbanes.haze.HazeTint(tint.copy(alpha = 0.7f))), blurRadius = 20.dp, noiseFactor = 0.04f),
-)
-
-/** Height of the frosted bottom bar, so scrolling tabs can end above it instead of under it. */
-val LocalNavPad = androidx.compose.runtime.compositionLocalOf { 0.dp }
